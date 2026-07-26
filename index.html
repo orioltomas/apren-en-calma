@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta name="theme-color" content="#1A1A22">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-title" content="En Calma">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<title>Aprèn en Calma</title>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+body{
+  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
+  background:#1A1A22;color:#C8C4BC;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));
+  padding-bottom:calc(20px + env(safe-area-inset-bottom,0px));
+  padding-left:calc(20px + env(safe-area-inset-left,0px));
+  padding-right:calc(20px + env(safe-area-inset-right,0px))
+}
+.screen{display:none;flex-direction:column;align-items:center;justify-content:center;width:100%;max-width:420px;gap:20px}
+.screen.active{display:flex}
+.screen.scrollable{justify-content:flex-start;max-height:100%;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:8px 0}
+/* centrat quan hi cap, desplaçable quan no — sense retallar mai per dalt */
+.screen.scrollable>.content-area{margin:auto 0}
+.screen.scrollable::-webkit-scrollbar{display:none}
+
+/* Age selector */
+h1{font-size:26px;font-weight:300;letter-spacing:2px;color:#C8C4BC;margin-bottom:4px}
+.subtitle{font-size:14px;font-weight:300;color:#7A7670;margin-bottom:12px;text-align:center;line-height:1.5}
+.age-grid{display:flex;flex-direction:column;gap:14px;width:220px}
+.age-btn{
+  padding:18px 0;border:none;border-radius:16px;
+  font-size:18px;font-weight:400;letter-spacing:1px;
+  cursor:pointer;transition:background 0.3s;text-align:center
+}
+.age-btn:active{opacity:0.7}
+.age-btn .age-range{display:block;font-size:24px;letter-spacing:2px;margin-bottom:2px}
+.age-btn .age-desc{display:block;font-size:12px;font-weight:300;opacity:0.7}
+.age-2{background:#2A3040;color:#B0B8C8}
+.age-4{background:#302A28;color:#C8B8B0}
+.age-6{background:#282830;color:#B8B0C0}
+
+/* Shared */
+.back-btn{
+  position:fixed;top:16px;left:16px;z-index:10;
+  background:none;border:none;font-size:26px;color:#7A7670;cursor:pointer;
+  padding:8px 10px;border-radius:12px;transition:background 0.3s
+}
+.back-btn:active{background:#2A2A34}
+.content-area{width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;padding:12px 0}
+.main-symbol{font-size:76px;font-weight:300;color:#C8C4BC;line-height:1;letter-spacing:4px;min-height:82px;display:flex;align-items:center;justify-content:center}
+.progress{font-size:13px;color:#5A5854;font-weight:300;letter-spacing:1px}
+.page-title{font-size:15px;font-weight:300;color:#7A7670;letter-spacing:1px;margin-bottom:-8px}
+.sub-label{font-size:15px;color:#7A7670;font-weight:300;letter-spacing:1px;min-height:20px;text-align:center;padding:0 16px;line-height:1.4}
+.feedback{font-size:15px;color:#8A8680;font-weight:400;letter-spacing:1px;min-height:22px;text-align:center}
+
+/* Activity menu */
+.act-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:340px;padding:4px}
+.act-tile{
+  border:none;border-radius:16px;padding:16px 6px;cursor:pointer;
+  transition:background 0.3s;text-align:center;font-family:inherit
+}
+.act-tile:active{opacity:0.7}
+.act-tile .act-sym{display:block;font-size:19px;letter-spacing:2px;margin-bottom:4px}
+.act-tile .act-name{display:block;font-size:12px;font-weight:300;opacity:0.7}
+
+/* Bottom nav */
+.bottom-nav{display:flex;gap:12px;margin-top:4px}
+.nav-arrow{
+  width:52px;height:52px;border-radius:50%;background:#262630;border:none;
+  font-size:22px;color:#8A8680;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;transition:background 0.3s
+}
+.nav-arrow:active{background:#32323E}
+.nav-arrow:disabled{opacity:0.2;cursor:default}
+
+/* Dots (numbers) */
+.dots-container{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;min-height:100px;max-width:340px;padding:12px}
+.dot{width:46px;height:46px;border-radius:50%;background:#383848;cursor:pointer;transition:background 0.4s;border:1px solid #484858}
+.dot.counted{background:#5A7A6A;border-color:#5A7A6A}
+.dot-label{width:100%;text-align:center;font-size:15px;color:#8A8680;font-weight:400;letter-spacing:1px;margin-top:4px}
+.num-word{font-size:18px;font-weight:300;color:#6A6660;letter-spacing:2px;min-height:24px}
+
+/* Trace canvas */
+.trace-area{position:relative;width:260px;height:200px;border-radius:20px;background:#22222C;overflow:hidden;touch-action:none;margin:0 auto}
+.trace-area canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
+.clear-btn{background:#262630;border:none;border-radius:12px;padding:10px 24px;color:#8A8680;font-size:14px;font-weight:300;letter-spacing:1px;cursor:pointer;transition:background 0.3s;font-family:inherit}
+.clear-btn:active{background:#32323E}
+.toggle-btn{background:#262630;border:none;border-radius:12px;padding:8px 16px;color:#8A8680;font-size:13px;font-weight:300;cursor:pointer;transition:background 0.3s;font-family:inherit}
+.toggle-btn:active{background:#32323E}
+.toggle-btn.on{background:#3A4A40;color:#A0B8A8}
+
+/* Generic quiz */
+.quiz-target{min-height:88px;display:flex;align-items:center;justify-content:center;gap:14px;background:#262630;border-radius:20px;padding:14px 22px}
+.quiz-target.bare{background:none;padding:0}
+.quiz-options{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;max-width:340px;padding:4px}
+.opt{
+  width:76px;height:76px;display:flex;align-items:center;justify-content:center;
+  background:#262630;border-radius:16px;cursor:pointer;transition:background 0.3s,opacity 0.3s;
+  border:2px solid transparent
+}
+.opt:active{background:#32323E}
+.opt.hit{border-color:#6A8A78;background:#2A3A32}
+.opt.miss{opacity:0.2}
+.opt.round{border-radius:50%;background:none}
+.opt.round:active{background:none;opacity:0.7}
+.opt.big{width:126px;height:126px}
+.opt.text{font-size:28px;font-weight:300;color:#C8C4BC;letter-spacing:1px}
+.plus{font-size:26px;font-weight:300;color:#6A6660}
+/* consigna dibuixada per a qui encara no llegeix */
+.cue{display:flex;align-items:center;justify-content:center;gap:20px}
+.cue .cluster{max-width:64px;gap:4px}
+.cue .cluster i{width:11px;height:11px}
+/* pista: halo lent, sense canvi de color ni moviment brusc */
+@keyframes hintpulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(138,158,144,0)}
+  50%{box-shadow:0 0 0 7px rgba(138,158,144,0.20)}
+}
+.hint{animation:hintpulse 2.6s ease-in-out infinite}
+@media(prefers-reduced-motion:reduce){
+  .hint{animation:none;box-shadow:0 0 0 3px rgba(138,158,144,0.28)}
+}
+.cluster{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;align-items:center;max-width:92px}
+.cluster i{width:16px;height:16px;border-radius:50%;background:#7A8290;display:block}
+.opt.big .cluster{max-width:100px}
+.opt.big .cluster i{width:18px;height:18px}
+
+/* Memory */
+.memory-grid{display:grid;gap:10px;justify-content:center;padding:8px}
+.memory-card{
+  width:64px;height:64px;border-radius:14px;background:#262630;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:background 0.3s;border:2px solid transparent
+}
+.memory-card:active{background:#32323E}
+.memory-card.revealed,.memory-card.matched{background:#2A3A32;border-color:#5A7A6A}
+.memory-card.matched{opacity:0.55;cursor:default}
+
+/* Patterns */
+.pattern-row{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap}
+.pattern-slot{width:42px;height:42px;background:#1E1E28;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.pattern-slot.empty{border:1px dashed #484858}
+
+/* Sequence */
+.seq-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;max-width:340px;padding:4px}
+.seq-card{
+  width:72px;height:72px;border-radius:16px;background:#262630;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;border:2px solid transparent;
+  transition:background 0.3s,opacity 0.3s
+}
+.seq-card:active{background:#32323E}
+.seq-card b{display:block;border-radius:50%;background:#7A8290}
+.seq-card.done{background:#2A3A32;border-color:#5A7A6A;opacity:0.5;cursor:default}
+.seq-card.miss{opacity:0.2}
+
+/* Breathe */
+.breath-stage{width:100%;height:290px;display:flex;align-items:center;justify-content:center;position:relative}
+.breath-circle{
+  width:210px;height:210px;border-radius:50%;
+  border:2px solid #6A8A78;background:rgba(106,138,120,0.07);
+  animation:breathe 10s ease-in-out infinite
+}
+@keyframes breathe{
+  0%{transform:scale(0.42)}
+  40%{transform:scale(1)}
+  50%{transform:scale(1)}
+  100%{transform:scale(0.42)}
+}
+.breath-word{position:absolute;font-size:16px;font-weight:300;letter-spacing:3px;color:#8A9E90}
+#b-in{animation:bin 10s ease-in-out infinite}
+#b-out{animation:bout 10s ease-in-out infinite}
+@keyframes bin{0%{opacity:0}8%{opacity:1}38%{opacity:1}46%{opacity:0}100%{opacity:0}}
+@keyframes bout{0%{opacity:0}48%{opacity:0}56%{opacity:1}92%{opacity:1}100%{opacity:0}}
+@media(prefers-reduced-motion:reduce){
+  .breath-circle{animation-duration:14s}
+}
+
+/* Draw color picker */
+.draw-colors{position:fixed;bottom:20px;left:0;right:0;z-index:10;display:flex;justify-content:center;gap:12px;padding:10px;pointer-events:none;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.draw-colors .dc{width:36px;height:36px;border-radius:50%;cursor:pointer;pointer-events:auto;transition:transform 0.2s;border:2px solid transparent}
+.draw-colors .dc.active{border-color:#8A8680;transform:scale(1.15)}
+.draw-colors .dc:active{opacity:0.7}
+.draw-colors .dc.eraser{background:#1A1A22;border-color:#4A4A56;display:flex;align-items:center;justify-content:center;color:#7A7670;font-size:15px}
+.draw-colors .dc.eraser.active{border-color:#8A8680}
+
+/* Responsive */
+@media(max-width:400px){
+  .main-symbol{font-size:60px}
+  .dot{width:38px;height:38px}
+  .dots-container{gap:12px}
+  .trace-area{width:220px;height:170px}
+  .opt{width:66px;height:66px}
+  .opt.big{width:112px;height:112px}
+  .memory-card{width:56px;height:56px}
+  .seq-card{width:64px;height:64px}
+}
+@media(max-height:660px){
+  .main-symbol{font-size:52px;min-height:56px}
+  .content-area{gap:14px;padding:4px 0}
+  .dots-container{gap:10px;padding:6px;min-height:70px}
+  .dot{width:34px;height:34px}
+  .trace-area{width:200px;height:140px}
+  .bottom-nav{margin-top:0}
+  .memory-card{width:50px;height:50px}
+  .opt{width:60px;height:60px}
+  .opt.big{width:104px;height:104px}
+  .seq-card{width:58px;height:58px}
+  .breath-stage{height:230px}
+  .breath-circle{width:170px;height:170px}
+}
+</style>
+</head>
+<body>
+
+<!-- Age Selector -->
+<div id="screen-age" class="screen active">
+  <h1>Aprèn en Calma</h1>
+  <p class="subtitle">Tria l'edat del petit explorador</p>
+  <div class="age-grid">
+    <button class="age-btn age-2" data-age="2">
+      <span class="age-range">2 – 3</span>
+      <span class="age-desc">tocar i descobrir</span>
+    </button>
+    <button class="age-btn age-4" data-age="4">
+      <span class="age-range">4 – 5</span>
+      <span class="age-desc">traçar i reconèixer</span>
+    </button>
+    <button class="age-btn age-6" data-age="6">
+      <span class="age-range">6 – 7</span>
+      <span class="age-desc">llegir, escriure i sumar</span>
+    </button>
+  </div>
+</div>
+
+<!-- Activity Menu -->
+<div id="screen-activities" class="screen scrollable">
+  <button class="back-btn" data-goto="age" aria-label="Enrere">←</button>
+  <div class="content-area">
+    <p class="page-title" id="act-age-label">4 – 5 anys</p>
+    <div class="act-grid" id="act-buttons"></div>
+  </div>
+</div>
+
+<!-- Numbers -->
+<div id="screen-numbers" class="screen scrollable">
+  <button class="back-btn" data-goto="activities" aria-label="Enrere">←</button>
+  <div class="content-area">
+    <div class="main-symbol" id="num-symbol">1</div>
+    <div class="num-word" id="num-word">un</div>
+    <div class="dots-container" id="num-dots"></div>
+    <div class="progress" id="num-progress">1 / 10</div>
+    <div class="bottom-nav">
+      <button class="nav-arrow" id="num-prev" aria-label="Anterior">←</button>
+      <button class="nav-arrow" id="num-next" aria-label="Següent">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- Letters / Trace -->
+<div id="screen-letters" class="screen">
+  <button class="back-btn" data-goto="activities" aria-label="Enrere">←</button>
+  <div class="content-area">
+    <div class="main-symbol" id="let-symbol">A</div>
+    <div class="trace-area" id="trace-area">
+      <canvas id="trace-canvas"></canvas>
+    </div>
+    <div style="display:flex;gap:12px;align-items:center">
+      <button class="clear-btn" id="clear-btn">netejar</button>
+      <button class="toggle-btn" id="case-toggle">a a</button>
+    </div>
+    <div class="progress" id="let-progress">1 / 27</div>
+  </div>
+  <div class="bottom-nav">
+    <button class="nav-arrow" id="let-prev" aria-label="Anterior">←</button>
+    <button class="nav-arrow" id="let-next" aria-label="Següent">→</button>
+  </div>
+</div>
+
+<!-- Generic quiz (shapes, colors, patterns, compare, odd one out, sums, first letter) -->
+<div id="screen-quiz" class="screen scrollable">
+  <button class="back-btn" data-goto="activities" aria-label="Enrere">←</button>
+  <div class="content-area">
+    <p class="page-title" id="quiz-title"></p>
+    <div class="quiz-target" id="quiz-target"></div>
+    <div class="sub-label" id="quiz-prompt"></div>
+    <div class="quiz-options" id="quiz-options"></div>
+    <div class="feedback" id="quiz-feedback"></div>
+    <div class="progress" id="quiz-progress"></div>
+    <div class="bottom-nav">
+      <button class="clear-btn" id="quiz-again" style="display:none">una altra</button>
+      <button class="nav-arrow" id="quiz-skip" aria-label="Següent">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- Memory -->
+<div id="screen-memory" class="screen scrollable">
+  <button class="back-btn" data-goto="activities" aria-label="Enrere">←</button>
+  <div class="content-area">
+    <p class="page-title">memòria</p>
+    <div class="memory-grid" id="memory-grid"></div>
+    <div class="feedback" id="memory-feedback"></div>
+    <div class="progress" id="memory-progress"></div>
+    <button class="clear-btn" id="memory-reset">una altra</button>
+  </div>
+</div>
+
+<!-- Sequence -->
+<div id="screen-sequence" class="screen scrollable">
+  <button class="back-btn" data-goto="activities" aria-label="Enrere">←</button>
+  <div class="content-area">
+    <p class="page-title">ordenar</p>
+    <div class="sub-label" id="seq-hint"></div>
+    <div class="seq-row" id="seq-row"></div>
+    <div class="feedback" id="seq-feedback"></div>
+    <div class="progress" id="seq-progress"></div>
+    <div class="bottom-nav">
+      <button class="clear-btn" id="seq-again" style="display:none">una altra</button>
+      <button class="nav-arrow" id="seq-skip" aria-label="Següent">→</button>
+    </div>
+  </div>
+</div>
+
+<!-- Breathe -->
+<div id="screen-breathe" class="screen">
+  <button class="back-btn" data-goto="activities" aria-label="Enrere">←</button>
+  <div class="content-area">
+    <div class="breath-stage">
+      <div class="breath-circle"></div>
+      <span class="breath-word" id="b-in">a poc a poc, agafa aire</span>
+      <span class="breath-word" id="b-out">i deixa'l anar</span>
+    </div>
+  </div>
+</div>
+
+<!-- Drawing -->
+<div id="screen-draw" class="screen" style="padding:0;gap:0;max-width:none;position:relative">
+  <canvas id="draw-canvas" style="position:fixed;inset:0;touch-action:none;cursor:crosshair"></canvas>
+  <div style="position:fixed;top:0;left:0;right:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;padding-top:calc(8px + env(safe-area-inset-top,0px));background:linear-gradient(to bottom,rgba(26,26,34,0.6),transparent);pointer-events:none">
+    <button class="back-btn" style="position:static;pointer-events:auto" data-goto="activities" aria-label="Enrere">←</button>
+    <button class="clear-btn" id="draw-clear" style="pointer-events:auto">netejar</button>
+  </div>
+  <div class="draw-colors" id="draw-colors"></div>
+</div>
+
+<script>
+/* ══ helpers ══ */
+const $=id=>document.getElementById(id)
+const randInt=n=>Math.floor(Math.random()*n)
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=randInt(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+/* n valors diferents de 0..max-1, opcionalment excloent alguns */
+function pickDistinct(n,max,exclude){
+  const pool=[]
+  for(let i=0;i<max;i++)if(!exclude||exclude.indexOf(i)<0)pool.push(i)
+  return shuffle(pool).slice(0,n)
+}
+/* array barrejat de n índexs diferents que sempre conté `correct` */
+function withDistractors(correct,max,n){
+  const out=pickDistinct(Math.min(n,max)-1,max,[correct])
+  out.push(correct)
+  return shuffle(out)
+}
+function haptics(){try{navigator.vibrate&&navigator.vibrate(12)}catch(e){}}
+/* Abans dels 6 anys encara no llegeixen: ni consignes ni elogis escrits.
+   El reforç és un signe, i la consigna és una pista visual (vegeu cueHTML). */
+function reads(){return currentAge>=6}
+function successMsg(){return reads()?'Molt bé':'✓'}
+function doneMsg(){return reads()?'Ja està':'✓ ✓ ✓'}
+function againLabel(){return reads()?'una altra':'↻'}
+
+/* ══ formes (font única per a formes, memòria, patrons i primera lletra) ══ */
+const NEUTRAL='#7A8290'
+const SHAPES=[
+  {name:'cercle',   color:'#6A7A88',path:c=>'<circle cx="20" cy="20" r="17" fill="'+c+'"/>'},
+  {name:'quadrat',  color:'#7A8870',path:c=>'<rect x="4" y="4" width="32" height="32" fill="'+c+'"/>'},
+  {name:'triangle', color:'#887060',path:c=>'<polygon points="20,3 37,36 3,36" fill="'+c+'"/>'},
+  {name:'estrella', color:'#7A7088',path:c=>'<polygon points="20,2 24.5,15 38,15 27,23.5 31,37 20,29 9,37 13,23.5 2,15 15.5,15" fill="'+c+'"/>'},
+  {name:'cor',      color:'#7A6878',path:c=>'<path d="M20 36 C20 36 3 23 3 13.5 C3 7.5 8 4 12.5 4 C16.5 4 20 8.5 20 8.5 C20 8.5 23.5 4 27.5 4 C32 4 37 7.5 37 13.5 C37 23 20 36 20 36Z" fill="'+c+'"/>'},
+  {name:'diamant',  color:'#687878',path:c=>'<polygon points="20,2 38,20 20,38 2,20" fill="'+c+'"/>'},
+  {name:'oval',     color:'#78807A',path:c=>'<ellipse cx="20" cy="20" rx="18" ry="12" fill="'+c+'"/>'},
+  {name:'rectangle',color:'#80706A',path:c=>'<rect x="2" y="11" width="36" height="18" fill="'+c+'"/>'}
+]
+function shapeHTML(i,color,size){
+  const s=size||44
+  return '<svg width="'+s+'" height="'+s+'" viewBox="0 0 40 40" aria-hidden="true">'+SHAPES[i].path(color||SHAPES[i].color)+'</svg>'
+}
+const COLORS=[
+  {name:'vermell',hex:'#D06060'},
+  {name:'blau',   hex:'#6090C0'},
+  {name:'groc',   hex:'#C0B060'},
+  {name:'verd',   hex:'#60A070'},
+  {name:'taronja',hex:'#C08050'},
+  {name:'lila',   hex:'#9070B0'},
+  {name:'rosa',   hex:'#C07080'},
+  {name:'marró',hex:'#A07050'}
+]
+function swatchHTML(hex,size){
+  const s=size||56
+  return '<span style="display:block;width:'+s+'px;height:'+s+'px;border-radius:50%;background:'+hex+'"></span>'
+}
+function clusterHTML(n,color){
+  const st=color?' style="background:'+color+'"':''
+  let h='<span class="cluster">'
+  for(let i=0;i<n;i++)h+='<i'+st+'></i>'
+  return h+'</span>'
+}
+/* Pista visual: la consigna dibuixada en comptes d'escrita.
+   L'element que es demana va en el color d'accent, l'altre apagat. */
+const ACCENT='#8A9E90'
+const DIM='#3E424C'
+function cueHTML(parts){return '<span class="cue">'+parts.join('')+'</span>'}
+
+/* ══ edats ══ */
+let currentAge=4
+const AGE_LABELS={2:'2 – 3 anys',4:'4 – 5 anys',6:'6 – 7 anys'}
+const AGE_CLASSES={2:'age-2',4:'age-4',6:'age-6'}
+
+const ACTS={
+  numbers:    {sym:'1 2 3',  name:'comptar',        open:()=>openNumbers()},
+  letters:    {sym:'A B C',  name:'lletres',        open:()=>openLetters()},
+  shapes:     {sym:'■ ● ▲',name:'formes', open:()=>openQuiz('shapes')},
+  colors:     {sym:'● ◐ ◑',name:'colors', open:()=>openQuiz('colors')},
+  memory:     {sym:'▢ ▢',name:'memòria', open:()=>openMemory()},
+  patterns:   {sym:'● ◐ ●',name:'patrons',open:()=>openQuiz('patterns')},
+  compare:    {sym:'▪ ■',name:'gran i petit',open:()=>openQuiz('compare')},
+  odd:        {sym:'● ● ▲',name:'què hi sobra',open:()=>openQuiz('odd')},
+  sequence:   {sym:'· ▪ ■',name:'ordenar',open:()=>openSequence()},
+  sums:       {sym:'1 + 1',  name:'sumar',          open:()=>openQuiz('sums')},
+  firstletter:{sym:'A · ?',name:'primera lletra',open:()=>openQuiz('firstletter')},
+  draw:       {sym:'╱ ╲',name:'dibuixar',  open:()=>openDraw()},
+  breathe:    {sym:'◯',  name:'respirar',       open:()=>showScreen('breathe')}
+}
+
+const AGE_ACTIVITIES={
+  2:['numbers','shapes','colors','memory','compare','draw','breathe'],
+  4:['numbers','letters','shapes','colors','memory','patterns','compare','odd','sequence','draw','breathe'],
+  6:['numbers','letters','shapes','colors','memory','patterns','odd','sequence','sums','firstletter','draw','breathe']
+}
+
+function setAge(age){
+  currentAge=age
+  localStorage.setItem('acb_age',age)
+  $('act-age-label').textContent=AGE_LABELS[age]
+  const container=$('act-buttons')
+  container.innerHTML=''
+  AGE_ACTIVITIES[age].forEach(id=>{
+    const a=ACTS[id]
+    const btn=document.createElement('button')
+    btn.className='act-tile '+AGE_CLASSES[age]
+    btn.innerHTML='<span class="act-sym"></span><span class="act-name"></span>'
+    btn.firstChild.textContent=a.sym
+    btn.lastChild.textContent=a.name
+    btn.addEventListener('click',a.open)
+    container.appendChild(btn)
+  })
+  showScreen('activities')
+}
+
+function showScreen(id){
+  clearTimeout(quizTimer)
+  clearHint()
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'))
+  const el=$('screen-'+id)
+  el.classList.add('active')
+  el.scrollTop=0
+}
+
+/* ══ Comptar ══ */
+const NUM_WORDS=['un','dos','tres','quatre','cinc','sis','set','vuit','nou','deu','onze','dotze',
+                 'tretze','catorze','quinze','setze','disset','divuit','dinou','vint']
+let currentNum=0
+let counted={}   /* índex de número -> Set de punts ja tocats */
+
+function maxNumber(){return currentAge===2?5:currentAge===4?10:20}
+
+function openNumbers(){
+  currentNum=0
+  counted={}
+  showScreen('numbers')
+  renderNum(0)
+}
+
+function renderNum(idx){
+  const maxNum=maxNumber()
+  const n=idx+1
+  const word=NUM_WORDS[idx]
+  $('num-symbol').textContent=n
+  $('num-word').textContent=word
+  $('num-progress').textContent=n+' / '+maxNum
+  const c=$('num-dots')
+  c.innerHTML=''
+  if(!counted[idx])counted[idx]=[]
+  const marks=counted[idx]
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div')
+    const isOn=marks.indexOf(i)>=0
+    d.className='dot'+(isOn?' counted':'')
+    d.setAttribute('role','button')
+    if(!isOn){
+      d.addEventListener('click',()=>{
+        /* es marca el punt que s'ha tocat: correspondència 1 a 1 */
+        marks.push(i)
+        if(marks.length>=n)haptics()
+        renderNum(idx)
+      })
+    }
+    c.appendChild(d)
+  }
+  if(marks.length>=n){
+    const lbl=document.createElement('div')
+    lbl.className='dot-label'
+    lbl.textContent=successMsg()
+    c.appendChild(lbl)
+  }
+  $('num-prev').disabled=idx===0
+  $('num-next').disabled=idx>=maxNum-1
+}
+function navNum(dir){
+  const next=currentNum+dir
+  if(next<0||next>=maxNumber())return
+  currentNum=next
+  renderNum(currentNum)
+}
+
+/* ══ Lletres ══ */
+/* alfabet català: A-Z amb Ç; a 6-7 anys s'hi afegeixen els dígrafs LL i NY */
+const BASE_LETTERS=['A','B','C','Ç','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z']
+const EXTRA_LETTERS=['LL','NY']
+let currentLet=0
+let letCase='maj'
+let traceCtx=null
+let traceDrawing=false
+let traceInited=false
+
+function letters(){
+  const base=currentAge>=6?BASE_LETTERS.concat(EXTRA_LETTERS):BASE_LETTERS
+  return letCase==='maj'?base:base.map(l=>l.toLowerCase())
+}
+
+function openLetters(){
+  showScreen('letters')
+  if(currentAge<6)letCase='maj'          /* els petits només treballen majúscules */
+  const tbtn=$('case-toggle')
+  tbtn.style.display=currentAge>=6?'inline-block':'none'
+  tbtn.textContent=letCase==='maj'?'a a':'A A'
+  tbtn.classList.toggle('on',letCase==='min')
+  currentLet=0
+  initTrace()
+  sizeTrace()
+  renderLet(0)
+}
+
+function sizeTrace(){
+  const canvas=$('trace-canvas'),container=$('trace-area')
+  const r=container.getBoundingClientRect()
+  if(!r.width)return
+  canvas.width=Math.round(r.width)
+  canvas.height=Math.round(r.height)
+  traceCtx=canvas.getContext('2d')
+  traceCtx.lineCap='round';traceCtx.lineJoin='round';traceCtx.lineWidth=8
+}
+
+function initTrace(){
+  if(traceInited)return
+  traceInited=true
+  const canvas=$('trace-canvas'),container=$('trace-area')
+  const getPos=e=>{const r=container.getBoundingClientRect();const t=e.touches?e.touches[0]:e;return{x:t.clientX-r.left,y:t.clientY-r.top}}
+  const onStart=e=>{e.preventDefault();if(!traceCtx)return;traceDrawing=true;const p=getPos(e);traceCtx.beginPath();traceCtx.moveTo(p.x,p.y)}
+  const onMove=e=>{e.preventDefault();if(!traceDrawing||!traceCtx)return;const p=getPos(e);traceCtx.strokeStyle='#8A9E90';traceCtx.lineTo(p.x,p.y);traceCtx.stroke();traceCtx.beginPath();traceCtx.moveTo(p.x,p.y)}
+  const onEnd=e=>{e.preventDefault();traceDrawing=false;if(traceCtx)traceCtx.beginPath()}
+  canvas.addEventListener('touchstart',onStart,{passive:false})
+  canvas.addEventListener('touchmove',onMove,{passive:false})
+  canvas.addEventListener('touchend',onEnd,{passive:false})
+  canvas.addEventListener('touchcancel',onEnd,{passive:false})
+  canvas.addEventListener('mousedown',onStart)
+  canvas.addEventListener('mousemove',onMove)
+  canvas.addEventListener('mouseup',onEnd)
+  canvas.addEventListener('mouseleave',onEnd)
+  $('clear-btn').addEventListener('click',drawGuideLetter)
+  $('case-toggle').addEventListener('click',()=>{
+    letCase=letCase==='maj'?'min':'maj'
+    const b=$('case-toggle')
+    b.textContent=letCase==='maj'?'a a':'A A'
+    b.classList.toggle('on',letCase==='min')
+    renderLet(currentLet)
+  })
+  window.addEventListener('resize',()=>{
+    if(!$('screen-letters').classList.contains('active'))return
+    sizeTrace();drawGuideLetter()
+  })
+}
+
+function drawGuideLetter(){
+  if(!traceCtx)return
+  const canvas=$('trace-canvas')
+  traceCtx.clearRect(0,0,canvas.width,canvas.height)
+  const txt=letters()[currentLet]
+  const fs=Math.round(canvas.height*(txt.length>1?0.5:0.72))
+  traceCtx.font=fs+'px -apple-system,Helvetica Neue,Arial,sans-serif'
+  traceCtx.textAlign='center'
+  traceCtx.textBaseline='middle'
+  traceCtx.fillStyle='rgba(200,196,188,0.1)'
+  traceCtx.fillText(txt,canvas.width/2,canvas.height/2+4)
+}
+
+function renderLet(idx){
+  const ls=letters()
+  $('let-symbol').textContent=ls[idx]
+  $('let-progress').textContent=(idx+1)+' / '+ls.length
+  $('let-prev').disabled=idx===0
+  $('let-next').disabled=idx===ls.length-1
+  drawGuideLetter()
+}
+function navLet(dir){
+  const next=currentLet+dir
+  if(next<0||next>=letters().length)return
+  currentLet=next
+  renderLet(currentLet)
+}
+
+/* ══ Motor de preguntes ══
+   Cada activitat només ha de saber construir una ronda:
+   {prompt, target, options:[{html,ok}], optClass, reveal}            */
+
+const QUIZZES={
+  shapes:     {title:'formes',        rounds:8,  build:buildShapeRound},
+  colors:     {title:'colors',        rounds:8,  build:buildColorRound},
+  patterns:   {title:'patrons',       rounds:10, build:buildPatternRound},
+  compare:    {title:'gran i petit',  rounds:8,  build:buildCompareRound},
+  odd:        {title:'què hi sobra',rounds:8,build:buildOddRound},
+  sums:       {title:'sumar',         rounds:10, build:buildSumRound},
+  firstletter:{title:'primera lletra',rounds:8,  build:buildFirstLetterRound}
+}
+
+let quizDef=null,quizRound=0,quizAnswered=false,quizTimer=null,hintTimer=null
+
+/* Pista: un halo lent sobre la resposta correcta.
+   A la primera ronda dels qui no llegeixen apareix de seguida — és la
+   demostració que substitueix l'explicació d'un adult. La resta de vegades
+   només surt si el nen porta una bona estona encallat. Mai no penalitza. */
+function clearHint(){
+  clearTimeout(hintTimer)
+  document.querySelectorAll('.hint').forEach(e=>e.classList.remove('hint'))
+}
+function armHint(card,firstRound){
+  clearHint()
+  if(!card)return
+  const delay=(firstRound&&!reads())?1200:9000
+  hintTimer=setTimeout(()=>card.classList.add('hint'),delay)
+}
+
+function openQuiz(id){
+  clearTimeout(quizTimer)
+  quizDef=QUIZZES[id]
+  quizRound=0
+  showScreen('quiz')
+  renderQuiz()
+}
+
+function renderQuiz(){
+  clearTimeout(quizTimer)
+  quizAnswered=false
+  const r=quizDef.build()
+  $('quiz-title').textContent=quizDef.title
+  const te=$('quiz-target')
+  if(r.target){te.style.display='flex';te.innerHTML=r.target;te.classList.toggle('bare',!!r.bareTarget)}
+  else{te.style.display='none'}
+  $('quiz-prompt').textContent=r.prompt||''
+  $('quiz-feedback').textContent=''
+  $('quiz-progress').textContent=(quizRound+1)+' / '+quizDef.rounds
+  $('quiz-again').style.display='none'
+  $('quiz-again').textContent=againLabel()
+  $('quiz-skip').style.display='flex'
+  const c=$('quiz-options')
+  c.innerHTML=''
+  let correctCard=null
+  r.options.forEach(o=>{
+    const card=document.createElement('div')
+    card.className='opt '+(r.optClass||'')
+    card.setAttribute('role','button')
+    card.innerHTML=o.html
+    if(o.ok)correctCard=card
+    card.addEventListener('click',()=>{
+      if(quizAnswered)return
+      if(o.ok){
+        quizAnswered=true
+        clearHint()
+        card.classList.add('hit')
+        haptics()
+        $('quiz-feedback').textContent=successMsg()+(r.reveal&&reads()?' · '+r.reveal:'')
+        quizTimer=setTimeout(quizNext,1500)
+      }else{
+        card.classList.add('miss')
+        setTimeout(()=>card.classList.remove('miss'),500)
+      }
+    })
+    c.appendChild(card)
+  })
+  armHint(correctCard,quizRound===0)
+}
+
+function quizNext(){
+  if(quizRound>=quizDef.rounds-1)return quizEnd()
+  quizRound++
+  renderQuiz()
+}
+
+function quizEnd(){
+  clearHint()
+  $('quiz-target').style.display='none'
+  $('quiz-options').innerHTML=''
+  $('quiz-prompt').textContent=''
+  $('quiz-feedback').textContent=doneMsg()
+  $('quiz-progress').textContent=quizDef.rounds+' / '+quizDef.rounds
+  $('quiz-skip').style.display='none'
+  $('quiz-again').style.display='inline-block'
+}
+
+/* ── Formes ──
+   2-3: aparellar visualment (amb color).
+   4-5: la forma i el seu nom alhora, totes del mateix color perquè
+        s'hagi de mirar la forma i no el color.
+   6-7: només el nom escrit — es converteix en lectura.            */
+function buildShapeRound(){
+  const pool=currentAge===2?3:currentAge===4?5:8
+  const t=randInt(pool)
+  const nOpts=currentAge===2?3:4
+  const mono=currentAge!==2
+  const col=i=>mono?NEUTRAL:SHAPES[i].color
+  return{
+    prompt:currentAge===2?'':SHAPES[t].name,
+    target:currentAge===6?null:shapeHTML(t,col(t),52),
+    bareTarget:false,
+    options:withDistractors(t,pool,nOpts).map(i=>({html:shapeHTML(i,col(i),44),ok:i===t})),
+    optClass:''
+  }
+}
+
+/* ── Colors ── 6-7 anys: es llegeix la paraula, no es compara cap mostra */
+function buildColorRound(){
+  const pool=currentAge===2?3:currentAge===4?6:8
+  const t=randInt(pool)
+  const nOpts=currentAge===2?3:4
+  return{
+    prompt:currentAge===2?'':COLORS[t].name,
+    target:currentAge===6?null:swatchHTML(COLORS[t].hex,56),
+    bareTarget:true,
+    options:withDistractors(t,pool,nOpts).map(i=>({html:swatchHTML(COLORS[i].hex,50),ok:i===t})),
+    optClass:'round'
+  }
+}
+
+/* ── Patrons ──
+   La base té sempre elements DIFERENTS (abans podia sortir ●●●●●) i les
+   opcions es barregen a cada ronda (abans sortien sempre en el mateix ordre). */
+function buildPatternRound(){
+  const cfg=currentAge===4?{len:2,opts:3}:{len:3,opts:4}
+  const base=pickDistinct(cfg.len,cfg.opts)
+  const full=[]
+  for(let i=0;i<6;i++)full.push(base[i%base.length])
+  const correct=full[5]
+  let target=''
+  for(let i=0;i<5;i++)target+='<span class="pattern-slot">'+shapeHTML(full[i],null,26)+'</span>'
+  target+='<span class="pattern-slot empty"></span>'
+  const opts=shuffle(Array.from({length:cfg.opts},(_,i)=>i))
+  return{
+    /* el buit de punts ja diu què s'ha de fer; el text només als qui llegeixen */
+    prompt:reads()?'continua el patró':'',
+    target:'<span class="pattern-row">'+target+'</span>',
+    bareTarget:true,
+    options:opts.map(i=>({html:shapeHTML(i,null,30),ok:i===correct})),
+    optClass:''
+  }
+}
+
+/* ── Gran i petit / més i menys ──
+   Només hi juguen nens que encara no llegeixen, així que la consigna és
+   sempre dibuixada: es mostra la parella de referència amb la que es
+   demana encesa i l'altra apagada. No cal que ningú els ho expliqui. */
+function buildCompareRound(){
+  const mode=currentAge===2?'size':(Math.random()<0.5?'size':'qty')
+  if(mode==='size'){
+    const sizes=shuffle([26,40,58,80]).slice(0,2).sort((a,b)=>a-b)
+    const askBig=Math.random()<0.5
+    const cue=cueHTML([
+      swatchHTML(askBig?DIM:ACCENT,22),
+      swatchHTML(askBig?ACCENT:DIM,44)
+    ])
+    const cards=[
+      {html:swatchHTML(NEUTRAL,sizes[0]),ok:!askBig},
+      {html:swatchHTML(NEUTRAL,sizes[1]),ok:askBig}
+    ]
+    return{prompt:'',target:cue,bareTarget:true,options:shuffle(cards),optClass:'big'}
+  }
+  let a=1+randInt(7),b=1+randInt(7)
+  while(Math.abs(a-b)<2){b=1+randInt(7)}
+  const askMore=Math.random()<0.5
+  const cue=cueHTML([
+    clusterHTML(2,askMore?DIM:ACCENT),
+    clusterHTML(6,askMore?ACCENT:DIM)
+  ])
+  const cards=[
+    {html:clusterHTML(a),ok:askMore?a>b:a<b},
+    {html:clusterHTML(b),ok:askMore?b>a:b<a}
+  ]
+  return{prompt:'',target:cue,bareTarget:true,options:shuffle(cards),optClass:'big'}
+}
+
+/* ── Què hi sobra ── un element trenca la forma o el color compartits */
+function buildOddRound(){
+  const n=currentAge===4?4:5
+  const pool=currentAge===4?5:8
+  const cards=[]
+  if(Math.random()<0.5){
+    const [a,b]=pickDistinct(2,pool)
+    for(let i=0;i<n-1;i++)cards.push({html:shapeHTML(a,NEUTRAL,42),ok:false})
+    cards.push({html:shapeHTML(b,NEUTRAL,42),ok:true})
+  }else{
+    const s=randInt(pool)
+    const [ca,cb]=pickDistinct(2,currentAge===4?6:8)
+    for(let i=0;i<n-1;i++)cards.push({html:shapeHTML(s,COLORS[ca].hex,42),ok:false})
+    cards.push({html:shapeHTML(s,COLORS[cb].hex,42),ok:true})
+  }
+  /* a 4-5 anys no es pot llegir la consigna: la primera ronda s'ensenya sola
+     amb el pols suau sobre la resposta (armHint) */
+  return{prompt:reads()?'quin no hi encaixa?':'',target:null,options:shuffle(cards),optClass:''}
+}
+
+/* ── Sumar ── continuació natural de comptar: es compten els dos grups */
+function buildSumRound(){
+  const a=1+randInt(5),b=1+randInt(5)
+  const sum=a+b
+  const wrong=[]
+  while(wrong.length<3){
+    const d=Math.max(1,sum+(randInt(5)-2))
+    if(d!==sum&&wrong.indexOf(d)<0)wrong.push(d)
+  }
+  const nums=shuffle(wrong.concat([sum]))
+  return{
+    prompt:"quants n'hi ha en total?",
+    target:clusterHTML(a)+'<span class="plus">+</span>'+clusterHTML(b),
+    options:nums.map(v=>({html:String(v),ok:v===sum})),
+    optClass:'text'
+  }
+}
+
+/* ── Primera lletra ── fonètica amb el vocabulari que ja s'ha treballat */
+function buildFirstLetterRound(){
+  const items=SHAPES.map((s,i)=>({word:s.name,html:shapeHTML(i,NEUTRAL,54)}))
+    .concat(COLORS.map(c=>({word:c.name,html:swatchHTML(c.hex,54)})))
+  const it=items[randInt(items.length)]
+  const letter=it.word.charAt(0).toUpperCase()
+  const others=[]
+  while(others.length<3){
+    const l=BASE_LETTERS[randInt(BASE_LETTERS.length)]
+    if(l!==letter&&others.indexOf(l)<0)others.push(l)
+  }
+  return{
+    prompt:'amb quina lletra comença?',
+    target:it.html,
+    bareTarget:true,
+    options:shuffle(others.concat([letter])).map(l=>({html:l,ok:l===letter})),
+    optClass:'text',
+    reveal:it.word
+  }
+}
+
+/* ══ Memòria ══
+   2-3 anys: cada parella té forma i color propis (més fàcil).
+   4+:       totes les formes del mateix color, així és memòria de forma
+             i no es pot resoldre mirant només els colors.              */
+function memoryConfig(){
+  if(currentAge===2)return{pairs:2,cols:2}
+  if(currentAge===4)return{pairs:4,cols:4}
+  return{pairs:8,cols:4}
+}
+
+let memCards=[],memFlipped=[],memMatched=[],memWait=false
+
+function openMemory(){
+  newMemory()
+  showScreen('memory')
+}
+
+function newMemory(){
+  const cfg=memoryConfig()
+  const ids=pickDistinct(cfg.pairs,SHAPES.length)
+  const deck=[]
+  ids.forEach(id=>{deck.push(id);deck.push(id)})
+  memCards=shuffle(deck)
+  memFlipped=[];memMatched=[];memWait=false
+  $('memory-feedback').textContent=''
+  $('memory-reset').textContent=againLabel()
+  renderMemory()
+}
+
+function renderMemory(){
+  const cfg=memoryConfig()
+  const grid=$('memory-grid')
+  grid.innerHTML=''
+  grid.style.gridTemplateColumns='repeat('+cfg.cols+',1fr)'
+  memCards.forEach((id,i)=>{
+    const el=document.createElement('div')
+    el.className='memory-card'
+    el.setAttribute('role','button')
+    const matched=memMatched.indexOf(i)>=0
+    const revealed=matched||memFlipped.indexOf(i)>=0
+    if(matched)el.classList.add('matched')
+    if(revealed){
+      el.classList.add('revealed')
+      el.innerHTML=shapeHTML(id,currentAge===2?null:NEUTRAL,30)
+    }
+    if(!revealed){
+      el.addEventListener('click',()=>{
+        if(memWait||memFlipped.length>=2)return
+        memFlipped.push(i)
+        renderMemory()
+        if(memFlipped.length===2){
+          const [a,b]=memFlipped
+          if(memCards[a]===memCards[b]){
+            memMatched.push(a,b)
+            memFlipped=[]
+            haptics()
+            renderMemory()
+            if(memMatched.length===cfg.pairs*2)$('memory-feedback').textContent=doneMsg()
+          }else{
+            memWait=true
+            setTimeout(()=>{memFlipped=[];memWait=false;renderMemory()},1200)
+          }
+        }
+      })
+    }
+    grid.appendChild(el)
+  })
+  $('memory-progress').textContent=(memMatched.length/2)+' / '+cfg.pairs+' parelles'
+}
+
+/* ══ Ordenar ══ */
+let seqItems=[],seqNext=0,seqRound=0
+const SEQ_ROUNDS=6
+
+function seqCount(){return currentAge===6?5:3}
+
+function openSequence(){
+  seqRound=0
+  newSequence()
+  showScreen('sequence')
+}
+
+function newSequence(){
+  const n=seqCount()
+  seqItems=shuffle(Array.from({length:n},(_,i)=>i))
+  seqNext=0
+  /* la consigna dibuixada: petit → gran, sense paraules */
+  const hint=$('seq-hint')
+  if(reads())hint.textContent='toca del més petit al més gran'
+  else hint.innerHTML=cueHTML([swatchHTML(ACCENT,16),swatchHTML(ACCENT,28),swatchHTML(ACCENT,40)])
+  $('seq-feedback').textContent=''
+  $('seq-again').style.display='none'
+  $('seq-again').textContent=againLabel()
+  $('seq-skip').style.display='flex'
+  $('seq-progress').textContent=(seqRound+1)+' / '+SEQ_ROUNDS
+  renderSequence()
+}
+
+function renderSequence(){
+  const row=$('seq-row')
+  row.innerHTML=''
+  let nextCard=null
+  seqItems.forEach(rank=>{
+    const card=document.createElement('div')
+    card.className='seq-card'+(rank<seqNext?' done':'')
+    card.setAttribute('role','button')
+    const size=20+rank*11
+    card.innerHTML='<b style="width:'+size+'px;height:'+size+'px"></b>'
+    if(rank===seqNext)nextCard=card
+    if(rank>=seqNext){
+      card.addEventListener('click',()=>{
+        if(rank===seqNext){
+          seqNext++
+          haptics()
+          renderSequence()
+          if(seqNext===seqCount()){
+            $('seq-feedback').textContent=successMsg()
+            setTimeout(()=>{
+              if(seqRound>=SEQ_ROUNDS-1)return seqEnd()
+              seqRound++
+              newSequence()
+            },1500)
+          }
+        }else{
+          card.classList.add('miss')
+          setTimeout(()=>card.classList.remove('miss'),500)
+        }
+      })
+    }
+    row.appendChild(card)
+  })
+  /* durant la primera ronda la pista acompanya cada pas: és la demostració */
+  if(seqNext<seqCount())armHint(nextCard,seqRound===0)
+  else clearHint()
+}
+
+function seqEnd(){
+  clearHint()
+  $('seq-row').innerHTML=''
+  $('seq-feedback').textContent=doneMsg()
+  $('seq-progress').textContent=SEQ_ROUNDS+' / '+SEQ_ROUNDS
+  $('seq-skip').style.display='none'
+  $('seq-again').style.display='inline-block'
+}
+
+/* ══ Dibuixar ══ */
+const DRAW_COLORS=['#D06060','#6090C0','#C0B060','#60A070','#C08050','#9070B0']
+const BG='#1A1A22'
+let drawCtx=null,drawInited=false,drawStroke=DRAW_COLORS[0]
+
+function openDraw(){
+  showScreen('draw')
+  initDraw()
+}
+
+function initDraw(){
+  const canvas=$('draw-canvas')
+  const onResize=()=>{
+    const w=window.innerWidth,h=window.innerHeight
+    if(canvas.width===w&&canvas.height===h)return
+    canvas.width=w;canvas.height=h
+    if(drawCtx){drawCtx.lineCap='round';drawCtx.lineJoin='round';drawCtx.lineWidth=8;drawCtx.strokeStyle=drawStroke}
+  }
+  if(drawInited){onResize();drawCtx.strokeStyle=drawStroke;return}
+  drawInited=true
+  canvas.width=window.innerWidth;canvas.height=window.innerHeight
+  drawCtx=canvas.getContext('2d')
+  drawCtx.lineCap='round';drawCtx.lineJoin='round';drawCtx.lineWidth=8;drawCtx.strokeStyle=drawStroke
+  window.addEventListener('resize',()=>{if($('screen-draw').classList.contains('active'))onResize()})
+  let drawing=false
+  const getPos=e=>{const t=e.touches?e.touches[0]:e;return{x:t.clientX,y:t.clientY}}
+  const onStart=e=>{e.preventDefault();drawing=true;const p=getPos(e);drawCtx.beginPath();drawCtx.moveTo(p.x,p.y)}
+  const onMove=e=>{e.preventDefault();if(!drawing)return;const p=getPos(e);drawCtx.lineTo(p.x,p.y);drawCtx.stroke();drawCtx.beginPath();drawCtx.moveTo(p.x,p.y)}
+  const onEnd=e=>{e.preventDefault();drawing=false;drawCtx.beginPath()}
+  canvas.addEventListener('touchstart',onStart,{passive:false})
+  canvas.addEventListener('touchmove',onMove,{passive:false})
+  canvas.addEventListener('touchend',onEnd,{passive:false})
+  canvas.addEventListener('touchcancel',onEnd,{passive:false})
+  canvas.addEventListener('mousedown',onStart)
+  canvas.addEventListener('mousemove',onMove)
+  canvas.addEventListener('mouseup',onEnd)
+  canvas.addEventListener('mouseleave',onEnd)
+  $('draw-clear').addEventListener('click',()=>drawCtx.clearRect(0,0,canvas.width,canvas.height))
+  const dc=$('draw-colors')
+  dc.innerHTML=''
+  const swatches=DRAW_COLORS.concat(['eraser'])
+  swatches.forEach((hex,i)=>{
+    const el=document.createElement('div')
+    const isEraser=hex==='eraser'
+    el.className='dc'+(i===0?' active':'')+(isEraser?' eraser':'')
+    el.setAttribute('role','button')
+    if(isEraser){el.textContent='⌫';el.setAttribute('aria-label','Esborrar')}
+    else{el.style.background=hex}
+    el.addEventListener('click',()=>{
+      document.querySelectorAll('.dc').forEach(e=>e.classList.remove('active'))
+      el.classList.add('active')
+      drawStroke=isEraser?BG:hex
+      drawCtx.strokeStyle=drawStroke
+      drawCtx.lineWidth=isEraser?26:8
+    })
+    dc.appendChild(el)
+  })
+}
+
+/* ══ Arrencada ══ */
+document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>showScreen(b.dataset.goto)))
+document.querySelectorAll('[data-age]').forEach(b=>b.addEventListener('click',()=>setAge(parseInt(b.dataset.age))))
+$('num-prev').addEventListener('click',()=>navNum(-1))
+$('num-next').addEventListener('click',()=>navNum(1))
+$('let-prev').addEventListener('click',()=>navLet(-1))
+$('let-next').addEventListener('click',()=>navLet(1))
+$('quiz-skip').addEventListener('click',quizNext)
+$('quiz-again').addEventListener('click',()=>{quizRound=0;renderQuiz()})
+$('memory-reset').addEventListener('click',newMemory)
+$('seq-skip').addEventListener('click',()=>{
+  if(seqRound>=SEQ_ROUNDS-1)return seqEnd()
+  seqRound++;newSequence()
+})
+$('seq-again').addEventListener('click',()=>{seqRound=0;newSequence()})
+
+/* trams antics (5 anys) desats a versions anteriors -> tram 4-5 */
+const AGE_MIGRATION={'2':2,'3':2,'4':4,'5':4,'6':6,'7':6}
+const stored=AGE_MIGRATION[localStorage.getItem('acb_age')]
+if(stored)setAge(stored)      /* només se salta el tria-edat si ja s'havia triat */
+else showScreen('age')
+
+if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
+  /* A la primeríssima visita la pàgina es carrega sense controlador i el
+     clients.claim() del worker l'hi acaba posant: això dispara un
+     controllerchange que NO vol dir versió nova. Cal saber si ja n'hi havia
+     un abans de registrar, o si no la primera obertura parpelleja sempre. */
+  const hadController=!!navigator.serviceWorker.controller
+  let reloaded=false
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('sw.js').catch(()=>{})
+  })
+  /* El worker nou ja fa skipWaiting a l'install, així que quan reclama la
+     pàgina vol dir que hi ha codi nou i el que es veu ha quedat vell. */
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(hadController&&!reloaded){reloaded=true;location.reload()}
+  })
+}
+</script>
+</body>
+</html>
