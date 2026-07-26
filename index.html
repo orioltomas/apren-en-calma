@@ -447,7 +447,6 @@ const AGE_ACTIVITIES={
 
 function setAge(age){
   currentAge=age
-  localStorage.setItem('acb_age',age)
   $('act-age-label').textContent=AGE_LABELS[age]
   const container=$('act-buttons')
   container.innerHTML=''
@@ -1093,11 +1092,7 @@ $('seq-skip').addEventListener('click',()=>{
 })
 $('seq-again').addEventListener('click',()=>{seqRound=0;newSequence()})
 
-/* trams antics (5 anys) desats a versions anteriors -> tram 4-5 */
-const AGE_MIGRATION={'2':2,'3':2,'4':4,'5':4,'6':6,'7':6}
-const stored=AGE_MIGRATION[localStorage.getItem('acb_age')]
-if(stored)setAge(stored)      /* només se salta el tria-edat si ja s'havia triat */
-else showScreen('age')
+showScreen('age')
 
 if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0){
   /* A la primeríssima visita la pàgina es carrega sense controlador i el
