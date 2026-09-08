@@ -4,8 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; font-src 'self'; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
-<meta name="theme-color" content="#F6F2EA" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#1C1815" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" id="theme-color" content="#F6F2EA">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
@@ -65,8 +64,10 @@
   --shape-1:#4F6072; --shape-2:#5E6E52; --shape-3:#6E543F; --shape-4:#5E5270;
   --shape-5:#6B4F60; --shape-6:#4C5C5C; --shape-7:#56604F; --shape-8:#6A5147;
 }
-@media(prefers-color-scheme:dark){
-  :root{
+/* El guió d'arrencada resol el tema abans del primer pintat i sempre
+   escriu data-theme, així que aquí no cal repetir cap valor: el clar viu
+   a :root i el fosc aquí. */
+:root[data-theme="dark"]{
     color-scheme:dark;
     --bg:#1C1815; --surface:#262119; --surface-hi:#322B22; --sunken:#161310;
     --ink:#EDE6D8; --muted:#A79E90; --faint:#8F8779; --line:#443A2E;
@@ -80,7 +81,6 @@
     --age-6:#241F2C; --age-6-ink:#C8BCD6;
     --shape-1:#6A7A88; --shape-2:#7A8870; --shape-3:#887060; --shape-4:#7A7088;
     --shape-5:#7A6878; --shape-6:#687878; --shape-7:#78807A; --shape-8:#80706A;
-  }
 }
 
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -262,6 +262,40 @@ h1{font-size:26px;font-weight:600;letter-spacing:2px;color:var(--ink);margin-bot
 .draw-colors .dc.eraser{background:var(--bg);border-color:var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px}
 .draw-colors .dc.eraser.active{border-color:var(--muted)}
 
+/* ══ Controls de l'adult ══
+   Només a la pantalla de tria d'edat: canvien l'app sencera, i dins d'una
+   activitat quedarien a un dit de distància d'una criatura de 2 anys. */
+.settings{
+  position:fixed;z-index:10;display:flex;gap:8px;
+  top:calc(12px + env(safe-area-inset-top,0px));
+  right:calc(12px + env(safe-area-inset-right,0px))
+}
+.chip{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--surface);border:1px solid var(--line);color:var(--muted);
+  font-family:var(--font-ui);font-size:15px;font-weight:600;letter-spacing:0.5px;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background 0.3s
+}
+.chip:active{background:var(--surface-hi)}
+.chip.on{background:var(--accent-soft);color:var(--accent);border-color:var(--accent)}
+
+/* Tot el text en majúscules, per als trams que encara no llegeixen la
+   minúscula. Se n'exclouen la lletra que s'ensenya —que té el seu propi
+   commutador— i els botons que ensenyen la forma de la lletra al rètol. */
+/* Els <button> no hereten text-transform: el full d'estil del navegador
+   els el posa a none, i per això cal anomenar-los. Sense això els noms
+   de les caselles del menú es quedaven en minúscula. */
+:root[data-case="upper"] body,
+:root[data-case="upper"] button{text-transform:uppercase}
+/* L'exclusió ha de guanyar la regla dels botons, que és més específica.
+   Importa sobretot per a #case-toggle: amb la transformació, "a a" i
+   "A A" es veurien igual i el botó deixaria de dir en quin cas estàs. */
+:root[data-case="upper"] .main-symbol,
+:root[data-case="upper"] #case-toggle,
+:root[data-case="upper"] .chip,
+.main-symbol{text-transform:none}
+
 /* Responsive */
 @media(max-width:400px){
   .main-symbol{font-size:60px}
@@ -288,11 +322,31 @@ h1{font-size:26px;font-weight:600;letter-spacing:2px;color:var(--ink);margin-bot
   .breath-circle{width:170px;height:170px}
 }
 </style>
+<script data-boot>
+/* Resol el tema i el cas abans que es pinti res, perquè no hi hagi
+   parpelleig. Sense preferència desada se segueix el sistema. */
+(function(){
+  var r=document.documentElement
+  var t=null,c=null
+  try{t=localStorage.getItem('aec-tema');c=localStorage.getItem('aec-cas')}catch(e){}
+  if(!t)t=(window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches)?'fosc':'clar'
+  r.dataset.theme=t==='fosc'?'dark':'light'
+  if(c==='alt')r.dataset.case='upper'
+  var m=document.getElementById('theme-color')
+  if(m)m.setAttribute('content',t==='fosc'?'#1C1815':'#F6F2EA')
+})()
+</script>
 </head>
 <body>
 
 <!-- Age Selector -->
 <div id="screen-age" class="screen active">
+  <div class="settings">
+    <button class="chip" id="toggle-case" aria-label="Tot el text en majúscules" aria-pressed="false">Aa</button>
+    <button class="chip" id="toggle-theme" aria-label="Canvia entre clar i fosc">
+      <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="8.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 1.6 a8.4 8.4 0 0 1 0 16.8 z" fill="currentColor"/></svg>
+    </button>
+  </div>
   <h1>Aprèn en Calma</h1>
   <p class="subtitle">Tria l'edat del petit explorador</p>
   <div class="age-grid">
@@ -1188,6 +1242,53 @@ document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',(
 if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{
   if($('screen-letters').classList.contains('active'))drawGuideLetter()
 })
+
+/* ══ Controls de l'adult ══
+   L'estat viu a <html> (data-theme, data-case) i el guió d'arrencada ja
+   l'ha escrit abans del primer pintat; aquí només es connecten els botons
+   i es desa la tria. rootEl es comprova perquè el full de proves executa
+   aquest script en un DOM mínim que no té documentElement. */
+const rootEl=document.documentElement
+function remember(k,v){try{localStorage.setItem(k,v)}catch(e){}}
+function recall(k){try{return localStorage.getItem(k)}catch(e){return null}}
+
+function paintTheme(dark){
+  rootEl.dataset.theme=dark?'dark':'light'
+  const m=$('theme-color')
+  if(m&&m.setAttribute)m.setAttribute('content',dark?'#1C1815':'#F6F2EA')
+}
+function syncCaseChip(){
+  const up=rootEl.dataset.case==='upper'
+  const b=$('toggle-case')
+  b.textContent=up?'AA':'Aa'
+  b.classList.toggle('on',up)
+  b.setAttribute('aria-pressed',up?'true':'false')
+}
+
+if(rootEl){
+  syncCaseChip()
+  $('toggle-case').addEventListener('click',()=>{
+    const up=rootEl.dataset.case!=='upper'
+    if(up){rootEl.dataset.case='upper'}else{delete rootEl.dataset.case}
+    remember('aec-cas',up?'alt':'baix')
+    syncCaseChip()
+    haptics()
+  })
+  $('toggle-theme').addEventListener('click',()=>{
+    const dark=rootEl.dataset.theme!=='dark'
+    paintTheme(dark)
+    remember('aec-tema',dark?'fosc':'clar')
+    haptics()
+  })
+  /* Mentre l'adult no hagi triat, se segueix el sistema encara que canviï
+     amb l'app ja oberta. */
+  if(window.matchMedia){
+    const mq=matchMedia('(prefers-color-scheme: dark)')
+    if(mq.addEventListener)mq.addEventListener('change',e=>{
+      if(!recall('aec-tema'))paintTheme(e.matches)
+    })
+  }
+}
 document.querySelectorAll('[data-age]').forEach(b=>b.addEventListener('click',()=>setAge(parseInt(b.dataset.age))))
 $('num-prev').addEventListener('click',()=>navNum(-1))
 $('num-next').addEventListener('click',()=>navNum(1))
