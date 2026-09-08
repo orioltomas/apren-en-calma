@@ -633,6 +633,9 @@ const icon=(w,h,body,extra)=>'<svg width="'+w+'" height="'+h+'" viewBox="0 0 '+w
   (extra||'fill="currentColor"')+' aria-hidden="true">'+body+'</svg>'
 const STROKE='fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"'
 const ICONS={
+  /* «comptar» ensenya quantitat, no la forma del glif: per això porta punts
+     agrupats i no 1 2 3, que és el que tracen «xifres» i «lletres». */
+  numbers: icon(34,17,'<circle cx="5" cy="4.5" r="4"/><circle cx="17" cy="4.5" r="4"/><circle cx="29" cy="4.5" r="4"/><circle cx="11" cy="12.5" r="4"/><circle cx="23" cy="12.5" r="4"/>'),
   shapes:  icon(46,16,'<rect x="0" y="1" width="14" height="14" rx="2"/><circle cx="23" cy="8" r="7"/><polygon points="39,1 46,15 32,15"/>'),
   colors:  icon(46,16,COLORS.slice(0,3).map((c,i)=>'<circle cx="'+(7+i*16)+'" cy="8" r="7" fill="'+c.hex+'"/>').join('')),
   memory:  icon(38,16,'<rect x="0" y="0" width="16" height="16" rx="3"/><rect x="22.8" y="0.8" width="14.4" height="14.4" rx="3" fill="none" stroke="currentColor" stroke-width="1.6"/>'),
@@ -645,7 +648,7 @@ const ICONS={
 }
 
 const ACTS={
-  numbers:    {sym:'1 2 3',        name:'comptar',        open:()=>openNumbers()},
+  numbers:    {icon:ICONS.numbers, name:'comptar',        open:()=>openNumbers()},
   letters:    {sym:'A B C',        name:'lletres',        open:()=>openLetters()},
   digits:     {sym:'1 2 3',        name:'xifres',         open:()=>openLetters('digits')},
   shapes:     {icon:ICONS.shapes,  name:'formes',         open:()=>openQuiz('shapes')},
