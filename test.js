@@ -22,7 +22,7 @@ const markup = html.split('<script>')[0]
    arriben a l'objecte global, així que s'hi afegeix un epíleg que els exposa. */
 const src = script + `
 globalThis.__T = {
-  QUIZZES, AGE_ACTIVITIES, ACTS, SHAPES, COLORS, VOCAB, ACCENT, DIM,
+  QUIZZES, AGE_ACTIVITIES, ACTS, SHAPES, COLORS, VOCAB, DIGITS, ACCENT, DIM,
   maxNumber, letters, renderNum, newMemory, memoryConfig,
   successMsg, doneMsg, reads, againLabel,
   setAge: a => { currentAge = a },
@@ -244,6 +244,18 @@ group('Primera lletra: vocabulari i inicials')
   const a = check('la resposta encapçala la paraula', bad === 0, bad + ' errors')
   const b = check('un dígraf es respon sencer', digraf === 0, digraf + ' cops respost a mitges')
   if (a && b) ok('2000 rondes correctes sobre ' + V.length + ' paraules')
+}
+
+/* ── 8b. Xifres ──────────────────────────────────────────────────────── */
+group('Xifres: les deu, i només als trams que ja tracen')
+{
+  check('deu xifres', T.DIGITS.length === 10, 'són ' + T.DIGITS.length)
+  check("l'1 primer i el 0 l'últim", T.DIGITS[0] === '1' && T.DIGITS[9] === '0',
+    T.DIGITS.join(''))
+  check('cap repetida', new Set(T.DIGITS).size === 10)
+  const on = [2, 4, 6].filter(a => T.AGE_ACTIVITIES[a].includes('digits'))
+  if (check('només a 4-5 i 6-7', on.join() === '4,6', 'és a ' + on.join(', ')))
+    ok('1 2 3 4 5 6 7 8 9 0 als trams que ja tracen')
 }
 
 /* ── 9. Res a llegir abans dels 6 anys ───────────────────────────────── */
