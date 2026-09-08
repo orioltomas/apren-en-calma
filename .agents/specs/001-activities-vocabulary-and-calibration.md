@@ -1,7 +1,7 @@
 ---
 id: 001
 title: First-letter vocabulary, digit tracing, subtraction and age-band calibration
-status: ready
+status: in-progress
 created: 2026-09-08
 owner: orioltomas
 hard_rules: [HR-002, HR-003, HR-004, HR-005, HR-006, HR-007, HR-008, HR-009]
@@ -227,6 +227,16 @@ Internal only; no network. New entries must satisfy the existing registries:
 - `helicòpter` carries H. It is the weakest entry — H is silent in Catalan and the word
   is long — but it is recognisable and unambiguous to draw. Swap it freely if a better
   one turns up.
+
+## Issues
+
+| # | Title | Blocked by |
+|---|---|---|
+| [#2](https://github.com/orioltomas/apren-en-calma/issues/2) | Give «primera lletra» its own drawn vocabulary | — |
+| [#3](https://github.com/orioltomas/apren-en-calma/issues/3) | Add «xifres»: trace the digits 0-9 | — |
+| [#4](https://github.com/orioltomas/apren-en-calma/issues/4) | Add «restar» for the 6-7 band | — |
+| [#5](https://github.com/orioltomas/apren-en-calma/issues/5) | Calibrate memory pairs, «ordenar» at 2-3, and the remaining radii | — |
+| [#6](https://github.com/orioltomas/apren-en-calma/issues/6) | Teach Ç and NY with middle-of-word rounds in «primera lletra» | #2 |
 
 ## Open questions
 
