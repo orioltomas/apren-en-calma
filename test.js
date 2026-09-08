@@ -22,7 +22,7 @@ const markup = html.split('<script>')[0]
    arriben a l'objecte global, així que s'hi afegeix un epíleg que els exposa. */
 const src = script + `
 globalThis.__T = {
-  QUIZZES, AGE_ACTIVITIES, ACTS, SHAPES, COLORS, ACCENT, DIM,
+  QUIZZES, AGE_ACTIVITIES, ACTS, SHAPES, COLORS, VOCAB, ACCENT, DIM,
   maxNumber, letters, renderNum, newMemory, memoryConfig,
   successMsg, doneMsg, reads, againLabel,
   setAge: a => { currentAge = a },
@@ -214,14 +214,36 @@ setAge(6)
 }
 
 /* ── 8. Primera lletra ───────────────────────────────────────────────── */
-group('Primera lletra: la inicial correspon a la paraula')
+group('Primera lletra: vocabulari i inicials')
 {
-  let bad = 0
+  /* El vocabulari, abans de mirar cap ronda. Ç i NY no hi són perquè cap
+     paraula catalana comença així; K, W i Y perquè només les encapçalen
+     manlleus. Totes cinc segueixen a l'activitat de lletres. */
+  const V = T.VOCAB
+  check('24 entrades', V.length === 24, 'són ' + V.length)
+  const lletres = V.map(v => v.letter)
+  check('cap lletra repetida', new Set(lletres).size === lletres.length)
+  const fora = ['Ç', 'K', 'W', 'Y'].filter(l => lletres.includes(l))
+  check('sense Ç, K, W ni Y', fora.length === 0, fora.join(' '))
+  check('hi ha la A', lletres.includes('A'))
+  const malament = V.filter(v => !v.word.toUpperCase().startsWith(v.letter))
+  check('cada paraula comença per la seva lletra', malament.length === 0,
+    malament.map(v => v.letter + '/' + v.word).join(', '))
+  const senseDibuix = V.filter(v => typeof v.path !== 'function' || !v.path('#000').includes('<'))
+  check('cada entrada porta dibuix', senseDibuix.length === 0,
+    senseDibuix.map(v => v.word).join(', '))
+
+  /* La inicial no és sempre un sol caràcter: «lluna» es respon LL, no L. */
+  let bad = 0, digraf = 0
   for (let i = 0; i < 2000; i++) {
     const r = QZ.firstletter.build()
-    if (r.options.find(o => o.ok).html !== r.reveal.charAt(0).toUpperCase()) bad++
+    const correcta = r.options.find(o => o.ok).html
+    if (!r.reveal.toUpperCase().startsWith(correcta)) bad++
+    if (r.reveal.toUpperCase().startsWith('LL') && correcta !== 'LL') digraf++
   }
-  if (check('inicial correcta', bad === 0, bad + ' errors')) ok('2000 rondes correctes')
+  const a = check('la resposta encapçala la paraula', bad === 0, bad + ' errors')
+  const b = check('un dígraf es respon sencer', digraf === 0, digraf + ' cops respost a mitges')
+  if (a && b) ok('2000 rondes correctes sobre ' + V.length + ' paraules')
 }
 
 /* ── 9. Res a llegir abans dels 6 anys ───────────────────────────────── */
