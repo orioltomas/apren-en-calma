@@ -213,6 +213,29 @@ setAge(6)
     ok('3000 sumes: total = punts dibuixats, 4 opcions diferents')
 }
 
+/* ── 7b. Restar ──────────────────────────────────────────────────────── */
+group('Restar: mai per sota d\'1, i els punts vius quadren')
+{
+  setAge(6)
+  let fora = 0, malCompta = 0, maxTotal = 0
+  for (let i = 0; i < 2000; i++) {
+    const r = QZ.restar.build()
+    const res = Number(r.options.find(o => o.ok).html)
+    const total = (r.target.match(/<i /g) || []).length
+    const vius = (r.target.match(/var\(--neutral\)/g) || []).length
+    if (res < 1 || res > 9) fora++
+    if (vius !== res) malCompta++
+    maxTotal = Math.max(maxTotal, total)
+  }
+  const a = check('el resultat sempre va d\'1 a 9', fora === 0, fora + ' fora de rang')
+  const b = check('els punts encesos són la resposta', malCompta === 0, malCompta + ' descompassats')
+  const c = check('mai més de 10 punts', maxTotal <= 10, 'n\'ha arribat a dibuixar ' + maxTotal)
+  const d = check('només al tram de 6-7',
+    !T.AGE_ACTIVITIES[2].includes('restar') && !T.AGE_ACTIVITIES[4].includes('restar')
+    && T.AGE_ACTIVITIES[6].includes('restar'))
+  if (a && b && c && d) ok('2000 restes correctes, fins a ' + maxTotal + ' punts')
+}
+
 /* ── 8. Primera lletra ───────────────────────────────────────────────── */
 group('Primera lletra: vocabulari i inicials')
 {
