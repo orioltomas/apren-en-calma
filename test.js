@@ -22,7 +22,7 @@ const markup = html.split('<script>')[0]
    arriben a l'objecte global, així que s'hi afegeix un epíleg que els exposa. */
 const src = script + `
 globalThis.__T = {
-  QUIZZES, AGE_ACTIVITIES, ACTS, SHAPES, COLORS, AGE_MIGRATION, ACCENT, DIM,
+  QUIZZES, AGE_ACTIVITIES, ACTS, SHAPES, COLORS, ACCENT, DIM,
   maxNumber, letters, renderNum, newMemory, memoryConfig,
   successMsg, doneMsg, reads, againLabel,
   setAge: a => { currentAge = a },
@@ -269,13 +269,6 @@ for (const age of [2, 4]) {
   if (check(`${age} anys: pista visual a cada ronda`, bad === 0, bad + ' rondes sense pista'))
     ok(`${age} anys: 1000 rondes amb referència encesa/apagada`)
 }
-
-/* ── 10. Migració de l'edat desada ───────────────────────────────────── */
-group('Migració del tram desat')
-check('5 anys (versió antiga) → tram 4-5', T.AGE_MIGRATION['5'] === 4)
-check('3 anys → tram 2-3', T.AGE_MIGRATION['3'] === 2)
-check('7 anys → tram 6-7', T.AGE_MIGRATION['7'] === 6)
-ok('trams antics migrats correctament')
 
 console.log(fails === 0 ? '\n✅ Totes les proves passen\n' : `\n❌ ${fails} proves fallades\n`)
 process.exit(fails ? 1 : 0)
