@@ -40,7 +40,7 @@
   :root{
     color-scheme:dark;
     --bg:#1C1815; --surface:#262119; --surface-hi:#322B22; --sunken:#161310;
-    --ink:#EDE6D8; --muted:#A79E90; --faint:#8F8779; --line:#332C24;
+    --ink:#EDE6D8; --muted:#A79E90; --faint:#8F8779; --line:#443A2E;
     --accent:#8FB39A; --accent-soft:#26302A;
     --accent-wash:rgba(143,179,154,0.08);
     --hint-halo:rgba(143,179,154,0.20); --hint-halo-strong:rgba(143,179,154,0.28);
@@ -77,7 +77,7 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 .subtitle{font-size:14px;font-weight:300;color:var(--muted);margin-bottom:12px;text-align:center;line-height:1.5}
 .age-grid{display:flex;flex-direction:column;gap:14px;width:220px}
 .age-btn{
-  padding:18px 0;border:none;border-radius:16px;
+  padding:18px 0;border:1px solid var(--line);border-radius:16px;
   font-size:18px;font-weight:400;letter-spacing:1px;
   cursor:pointer;transition:background 0.3s;text-align:center
 }
@@ -105,7 +105,8 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 /* Activity menu */
 .act-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:340px;padding:4px}
 .act-tile{
-  border:none;border-radius:16px;padding:16px 6px;cursor:pointer;
+  background:var(--surface);color:var(--ink);
+  border:1px solid var(--line);border-radius:16px;padding:16px 6px;cursor:pointer;
   transition:background 0.3s;text-align:center;font-family:inherit
 }
 .act-tile:active{opacity:0.7}
@@ -115,7 +116,7 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 /* Bottom nav */
 .bottom-nav{display:flex;gap:12px;margin-top:4px}
 .nav-arrow{
-  width:52px;height:52px;border-radius:50%;background:var(--surface);border:none;
+  width:52px;height:52px;border-radius:50%;background:var(--surface);border:1px solid var(--line);
   font-size:22px;color:var(--muted);cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:background 0.3s
 }
@@ -130,26 +131,27 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 .num-word{font-size:18px;font-weight:300;color:var(--faint);letter-spacing:2px;min-height:24px}
 
 /* Trace canvas */
-.trace-area{position:relative;width:260px;height:200px;border-radius:20px;background:var(--sunken);overflow:hidden;touch-action:none;margin:0 auto}
+.trace-area{position:relative;width:260px;height:200px;border-radius:20px;background:var(--sunken);border:1px solid var(--line);overflow:hidden;touch-action:none;margin:0 auto}
 .trace-area canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
-.clear-btn{background:var(--surface);border:none;border-radius:12px;padding:10px 24px;color:var(--muted);font-size:14px;font-weight:300;letter-spacing:1px;cursor:pointer;transition:background 0.3s;font-family:inherit}
+.clear-btn{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 24px;color:var(--muted);font-size:14px;font-weight:300;letter-spacing:1px;cursor:pointer;transition:background 0.3s;font-family:inherit}
 .clear-btn:active{background:var(--surface-hi)}
-.toggle-btn{background:var(--surface);border:none;border-radius:12px;padding:8px 16px;color:var(--muted);font-size:13px;font-weight:300;cursor:pointer;transition:background 0.3s;font-family:inherit}
+.toggle-btn{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 16px;color:var(--muted);font-size:13px;font-weight:300;cursor:pointer;transition:background 0.3s;font-family:inherit}
 .toggle-btn:active{background:var(--surface-hi)}
 .toggle-btn.on{background:var(--accent-soft);color:var(--accent)}
 
 /* Generic quiz */
-.quiz-target{min-height:88px;display:flex;align-items:center;justify-content:center;gap:14px;background:var(--surface);border-radius:20px;padding:14px 22px}
-.quiz-target.bare{background:none;padding:0}
+.quiz-target{min-height:88px;display:flex;align-items:center;justify-content:center;gap:14px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 22px}
+.quiz-target.bare{background:none;border:none;padding:0}
 .quiz-options{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;max-width:340px;padding:4px}
 .opt{
   width:76px;height:76px;display:flex;align-items:center;justify-content:center;
   background:var(--surface);border-radius:16px;cursor:pointer;transition:background 0.3s,opacity 0.3s;
-  border:2px solid transparent
+  border:1px solid var(--line)
 }
 .opt:active{background:var(--surface-hi)}
 .opt.hit{border-color:var(--accent);background:var(--accent-soft)}
 .opt.miss{opacity:0.2}
+.opt.round:not(.hit){border-color:transparent}
 .opt.round{border-radius:50%;background:none}
 .opt.round:active{background:none;opacity:0.7}
 .opt.big{width:126px;height:126px}
@@ -178,7 +180,7 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 .memory-card{
   width:64px;height:64px;border-radius:14px;background:var(--surface);cursor:pointer;
   display:flex;align-items:center;justify-content:center;
-  transition:background 0.3s;border:2px solid transparent
+  transition:background 0.3s;border:1px solid var(--line)
 }
 .memory-card:active{background:var(--surface-hi)}
 .memory-card.revealed,.memory-card.matched{background:var(--accent-soft);border-color:var(--accent)}
@@ -193,7 +195,7 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 .seq-row{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;align-items:center;max-width:340px;padding:4px}
 .seq-card{
   width:72px;height:72px;border-radius:16px;background:var(--surface);cursor:pointer;
-  display:flex;align-items:center;justify-content:center;border:2px solid transparent;
+  display:flex;align-items:center;justify-content:center;border:1px solid var(--line);
   transition:background 0.3s,opacity 0.3s
 }
 .seq-card:active{background:var(--surface-hi)}
@@ -224,8 +226,8 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 }
 
 /* Draw color picker */
-.draw-colors{position:fixed;bottom:20px;left:0;right:0;z-index:10;display:flex;justify-content:center;gap:12px;padding:10px;pointer-events:none;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
-.draw-colors .dc{width:36px;height:36px;border-radius:50%;cursor:pointer;pointer-events:auto;transition:transform 0.2s;border:2px solid transparent}
+.draw-colors{position:fixed;bottom:20px;left:0;right:0;z-index:10;display:flex;flex-wrap:wrap;justify-content:center;gap:5px;padding:6px 4px;pointer-events:none;padding-bottom:calc(10px + env(safe-area-inset-bottom,0px))}
+.draw-colors .dc{width:44px;height:44px;padding:4px;background-clip:content-box;border-radius:50%;cursor:pointer;pointer-events:auto;transition:transform 0.2s;border:2px solid transparent}
 .draw-colors .dc.active{border-color:var(--muted);transform:scale(1.15)}
 .draw-colors .dc:active{opacity:0.7}
 .draw-colors .dc.eraser{background:var(--bg);border-color:var(--line);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:15px}
@@ -234,7 +236,7 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 /* Responsive */
 @media(max-width:400px){
   .main-symbol{font-size:60px}
-  .dot{width:38px;height:38px}
+  .dot{width:44px;height:44px}
   .dots-container{gap:12px}
   .trace-area{width:220px;height:170px}
   .opt{width:66px;height:66px}
@@ -246,7 +248,7 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
   .main-symbol{font-size:52px;min-height:56px}
   .content-area{gap:14px;padding:4px 0}
   .dots-container{gap:10px;padding:6px;min-height:70px}
-  .dot{width:34px;height:34px}
+  .dot{width:44px;height:44px}
   .trace-area{width:200px;height:140px}
   .bottom-nav{margin-top:0}
   .memory-card{width:50px;height:50px}
@@ -463,7 +465,6 @@ function cueHTML(parts){return '<span class="cue">'+parts.join('')+'</span>'}
 /* ══ edats ══ */
 let currentAge=4
 const AGE_LABELS={2:'2 – 3 anys',4:'4 – 5 anys',6:'6 – 7 anys'}
-const AGE_CLASSES={2:'age-2',4:'age-4',6:'age-6'}
 
 const ACTS={
   numbers:    {sym:'1 2 3',  name:'comptar',        open:()=>openNumbers()},
@@ -495,7 +496,7 @@ function setAge(age){
   AGE_ACTIVITIES[age].forEach(id=>{
     const a=ACTS[id]
     const btn=document.createElement('button')
-    btn.className='act-tile '+AGE_CLASSES[age]
+    btn.className='act-tile'
     btn.innerHTML='<span class="act-sym"></span><span class="act-name"></span>'
     btn.firstChild.textContent=a.sym
     btn.lastChild.textContent=a.name
