@@ -561,6 +561,7 @@ const ICONS={
 const ACTS={
   numbers:    {sym:'1 2 3',        name:'comptar',        open:()=>openNumbers()},
   letters:    {sym:'A B C',        name:'lletres',        open:()=>openLetters()},
+  digits:     {sym:'1 2 3',        name:'xifres',         open:()=>openLetters('digits')},
   shapes:     {icon:ICONS.shapes,  name:'formes',         open:()=>openQuiz('shapes')},
   colors:     {icon:ICONS.colors,  name:'colors',         open:()=>openQuiz('colors')},
   memory:     {icon:ICONS.memory,  name:'memòria',        open:()=>openMemory()},
@@ -576,8 +577,8 @@ const ACTS={
 
 const AGE_ACTIVITIES={
   2:['numbers','shapes','colors','memory','compare','sequence','draw','breathe'],
-  4:['numbers','letters','shapes','colors','memory','patterns','compare','odd','sequence','draw','breathe'],
-  6:['numbers','letters','shapes','colors','memory','patterns','odd','sequence','sums','firstletter','draw','breathe']
+  4:['numbers','letters','digits','shapes','colors','memory','patterns','compare','odd','sequence','draw','breathe'],
+  6:['numbers','letters','digits','shapes','colors','memory','patterns','odd','sequence','sums','firstletter','draw','breathe']
 }
 
 function setAge(age){
@@ -679,12 +680,21 @@ function letters(){
   const base=currentAge>=6?BASE_LETTERS.concat(EXTRA_LETTERS):BASE_LETTERS
   return letCase==='maj'?base:base.map(l=>l.toLowerCase())
 }
+/* S'aprèn a fer l'1 primer i el 0 l'últim, no en ordre numèric. Són les deu
+   xifres: traçar el 17 són dos glifs i espaiat, que és una altra tasca. */
+const DIGITS=['1','2','3','4','5','6','7','8','9','0']
+/* La pantalla de traç no sap res de lletres tret d'aquí: el canvas, la
+   guia, netejar i les fletxes són els mateixos per als dos modes. */
+let traceMode='letters'
+function traceItems(){return traceMode==='digits'?DIGITS:letters()}
 
-function openLetters(){
+function openLetters(mode){
+  traceMode=mode==='digits'?'digits':'letters'
   showScreen('letters')
   if(currentAge<6)letCase='maj'          /* els petits només treballen majúscules */
   const tbtn=$('case-toggle')
-  tbtn.style.display=currentAge>=6?'inline-block':'none'
+  /* Les xifres no tenen majúscula ni minúscula */
+  tbtn.style.display=(traceMode==='letters'&&currentAge>=6)?'inline-block':'none'
   tbtn.textContent=letCase==='maj'?'a a':'A A'
   tbtn.classList.toggle('on',letCase==='min')
   currentLet=0
@@ -737,7 +747,7 @@ function drawGuideLetter(){
   if(!traceCtx)return
   const canvas=$('trace-canvas')
   traceCtx.clearRect(0,0,canvas.width,canvas.height)
-  const txt=letters()[currentLet]
+  const txt=traceItems()[currentLet]
   const fs=Math.round(canvas.height*(txt.length>1?0.5:0.72))
   traceCtx.font=fs+"px Andika,system-ui,-apple-system,sans-serif"
   traceCtx.textAlign='center'
@@ -747,7 +757,7 @@ function drawGuideLetter(){
 }
 
 function renderLet(idx){
-  const ls=letters()
+  const ls=traceItems()
   $('let-symbol').textContent=ls[idx]
   $('let-progress').textContent=(idx+1)+' / '+ls.length
   $('let-prev').disabled=idx===0
