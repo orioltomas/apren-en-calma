@@ -570,6 +570,7 @@ const ACTS={
   odd:        {icon:ICONS.odd,     name:'què hi sobra',   open:()=>openQuiz('odd')},
   sequence:   {icon:ICONS.sequence,name:'ordenar',        open:()=>openSequence()},
   sums:       {sym:'1 + 1',        name:'sumar',          open:()=>openQuiz('sums')},
+  restar:     {sym:'3 - 1',        name:'restar',         open:()=>openQuiz('restar')},
   firstletter:{sym:'A · ?',        name:'primera lletra', open:()=>openQuiz('firstletter')},
   draw:       {icon:ICONS.draw,    name:'dibuixar',       open:()=>openDraw()},
   breathe:    {icon:ICONS.breathe, name:'respirar',       open:()=>showScreen('breathe')}
@@ -578,7 +579,7 @@ const ACTS={
 const AGE_ACTIVITIES={
   2:['numbers','shapes','colors','memory','compare','sequence','draw','breathe'],
   4:['numbers','letters','digits','shapes','colors','memory','patterns','compare','odd','sequence','draw','breathe'],
-  6:['numbers','letters','digits','shapes','colors','memory','patterns','odd','sequence','sums','firstletter','draw','breathe']
+  6:['numbers','letters','digits','shapes','colors','memory','patterns','odd','sequence','sums','restar','firstletter','draw','breathe']
 }
 
 function setAge(age){
@@ -782,6 +783,7 @@ const QUIZZES={
   compare:    {title:'gran i petit',  rounds:8,  build:buildCompareRound},
   odd:        {title:'què hi sobra',rounds:8,build:buildOddRound},
   sums:       {title:'sumar',         rounds:10, build:buildSumRound},
+  restar:     {title:'restar',        rounds:8,  build:buildSubRound},
   firstletter:{title:'primera lletra',rounds:8,  build:buildFirstLetterRound}
 }
 
@@ -993,6 +995,30 @@ function buildSumRound(){
     prompt:"quants n'hi ha en total?",
     target:clusterHTML(a)+'<span class="plus">+</span>'+clusterHTML(b),
     options:nums.map(v=>({html:String(v),ok:v===sum})),
+    optClass:'text'
+  }
+}
+/* Els punts que se'n van queden apagats en lloc de desaparèixer: així es
+   veu alhora quants n'hi havia i quants en queden, que és el que fa
+   entendre la resta a aquesta edat. */
+function minusClusterHTML(total,gone){
+  let h='<span class="cluster">'
+  for(let i=0;i<total;i++)h+='<i style="background:'+(i<total-gone?NEUTRAL:DIM)+'"></i>'
+  return h+'</span>'
+}
+function buildSubRound(){
+  const a=3+randInt(8)               /* mai més de 10 punts */
+  const gone=1+randInt(a-1)          /* en queda sempre almenys un */
+  const res=a-gone
+  const wrong=[]
+  while(wrong.length<3){
+    const d=Math.max(1,res+(randInt(7)-3))
+    if(d!==res&&wrong.indexOf(d)<0)wrong.push(d)
+  }
+  return{
+    prompt:'quants en queden?',
+    target:minusClusterHTML(a,gone),
+    options:shuffle(wrong.concat([res])).map(v=>({html:String(v),ok:v===res})),
     optClass:'text'
   }
 }
