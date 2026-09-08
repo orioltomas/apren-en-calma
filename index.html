@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; font-src 'self'; manifest-src 'self'; worker-src 'self'; connect-src 'self'; base-uri 'none'; form-action 'none'">
 <meta name="theme-color" content="#F6F2EA" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1C1815" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
@@ -15,6 +15,33 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <title>Aprèn en Calma</title>
 <style>
+/* ══ Tipografia ══
+   Servides des d'aquí, no des de Google: el service worker fa return per a
+   tot el que no és del mateix origen, o sigui que unes fonts externes no
+   s'haurien desat mai i les lletres — el contingut de l'app — haurien
+   caigut a la font de recanvi sense connexió. Els fitxers són el subconjunt
+   latin, que ja cobreix les vocals accentuades i la ç. Totes dues són SIL
+   Open Font License; la llicència viatja a fonts/OFL-*.txt.
+
+   Quicksand per a tot el que són paraules; Andika només per als glifs que
+   s'ensenyen. La l minúscula i la I majúscula són la mateixa barra vertical
+   a la Quicksand, i com que l'app té commutador de majúscula i minúscula la
+   criatura veuria la mateixa forma un dia com a ela i un altre com a i
+   llatina. L'Andika, feta per la SIL per a qui comença a llegir, les
+   distingeix i manté la a i la g d'un sol pis. */
+@font-face{
+  font-family:'Quicksand';font-style:normal;font-weight:400 600;font-display:swap;
+  src:url('fonts/quicksand-variable-latin.woff2') format('woff2')
+}
+@font-face{
+  font-family:'Andika';font-style:normal;font-weight:400;font-display:swap;
+  src:url('fonts/andika-400-latin.woff2') format('woff2')
+}
+@font-face{
+  font-family:'Andika';font-style:normal;font-weight:700;font-display:swap;
+  src:url('fonts/andika-700-latin.woff2') format('woff2')
+}
+
 /* ══ Tokens de color ══
    Un sol lloc per a tots els colors de la interfície. El mode clar viu a
    :root i el fosc al bloc de sota; no hi ha cap valor repetit.
@@ -23,6 +50,8 @@
    i es queden igual als dos modes (vegeu COLORS i DRAW_COLORS al JS). */
 :root{
   color-scheme:light;
+  --font-ui:'Quicksand','Avenir Next',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --font-teach:'Andika','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
   --bg:#F6F2EA; --surface:#FFFCF6; --surface-hi:#EDE7DC; --sunken:#EDE7DC;
   --ink:#26221C; --muted:#6B6459; --faint:#736C60; --line:#DED6C8;
   --accent:#4E6B58; --accent-soft:#DCE6DD;
@@ -57,7 +86,7 @@
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%;overflow:hidden;touch-action:manipulation;-webkit-user-select:none;user-select:none}
 body{
-  font-family:-apple-system,'Helvetica Neue',Arial,sans-serif;
+  font-family:var(--font-ui);font-weight:500;
   background:var(--bg);color:var(--ink);
   display:flex;flex-direction:column;align-items:center;justify-content:center;
   padding:20px;padding-top:calc(20px + env(safe-area-inset-top,0px));
@@ -73,17 +102,17 @@ body{
 .screen.scrollable::-webkit-scrollbar{display:none}
 
 /* Age selector */
-h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bottom:4px}
-.subtitle{font-size:14px;font-weight:300;color:var(--muted);margin-bottom:12px;text-align:center;line-height:1.5}
+h1{font-size:26px;font-weight:600;letter-spacing:2px;color:var(--ink);margin-bottom:4px}
+.subtitle{font-size:14px;font-weight:400;color:var(--muted);margin-bottom:12px;text-align:center;line-height:1.5}
 .age-grid{display:flex;flex-direction:column;gap:14px;width:220px}
 .age-btn{
   padding:18px 0;border:1px solid var(--line);border-radius:16px;
-  font-size:18px;font-weight:400;letter-spacing:1px;
+  font-size:18px;font-weight:500;letter-spacing:1px;
   cursor:pointer;transition:background 0.3s;text-align:center
 }
 .age-btn:active{opacity:0.7}
-.age-btn .age-range{display:block;font-size:24px;letter-spacing:2px;margin-bottom:2px}
-.age-btn .age-desc{display:block;font-size:12px;font-weight:300;opacity:0.7}
+.age-btn .age-range{display:block;font-weight:600;font-size:24px;letter-spacing:2px;margin-bottom:2px}
+.age-btn .age-desc{display:block;font-size:12px;font-weight:400;opacity:0.7}
 .age-2{background:var(--age-2);color:var(--age-2-ink)}
 .age-4{background:var(--age-4);color:var(--age-4-ink)}
 .age-6{background:var(--age-6);color:var(--age-6-ink)}
@@ -96,11 +125,11 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 }
 .back-btn:active{background:var(--surface-hi)}
 .content-area{width:100%;display:flex;flex-direction:column;align-items:center;gap:20px;padding:12px 0}
-.main-symbol{font-size:76px;font-weight:300;color:var(--ink);line-height:1;letter-spacing:4px;min-height:82px;display:flex;align-items:center;justify-content:center}
-.progress{font-size:13px;color:var(--faint);font-weight:300;letter-spacing:1px}
-.page-title{font-size:15px;font-weight:300;color:var(--muted);letter-spacing:1px;margin-bottom:-8px}
-.sub-label{font-size:15px;color:var(--muted);font-weight:300;letter-spacing:1px;min-height:20px;text-align:center;padding:0 16px;line-height:1.4}
-.feedback{font-size:15px;color:var(--muted);font-weight:400;letter-spacing:1px;min-height:22px;text-align:center}
+.main-symbol{font-family:var(--font-teach);font-size:76px;font-weight:400;color:var(--ink);line-height:1;letter-spacing:4px;min-height:82px;display:flex;align-items:center;justify-content:center}
+.progress{font-size:13px;color:var(--faint);font-weight:400;letter-spacing:1px}
+.page-title{font-size:15px;font-weight:400;color:var(--muted);letter-spacing:1px;margin-bottom:-8px}
+.sub-label{font-size:15px;color:var(--muted);font-weight:400;letter-spacing:1px;min-height:20px;text-align:center;padding:0 16px;line-height:1.4}
+.feedback{font-size:15px;color:var(--muted);font-weight:500;letter-spacing:1px;min-height:22px;text-align:center}
 
 /* Activity menu */
 .act-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:340px;padding:4px}
@@ -110,8 +139,8 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
   transition:background 0.3s;text-align:center;font-family:inherit
 }
 .act-tile:active{opacity:0.7}
-.act-tile .act-sym{display:block;font-size:19px;letter-spacing:2px;margin-bottom:4px}
-.act-tile .act-name{display:block;font-size:12px;font-weight:300;opacity:0.7}
+.act-tile .act-sym{display:block;font-family:var(--font-teach);font-weight:700;font-size:19px;letter-spacing:2px;margin-bottom:4px}
+.act-tile .act-name{display:block;font-size:12px;font-weight:400;opacity:0.7}
 
 /* Bottom nav */
 .bottom-nav{display:flex;gap:12px;margin-top:4px}
@@ -127,15 +156,15 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 .dots-container{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;min-height:100px;max-width:340px;padding:12px}
 .dot{width:46px;height:46px;border-radius:50%;background:var(--sunken);cursor:pointer;transition:background 0.4s;border:1px solid var(--line)}
 .dot.counted{background:var(--accent);border-color:var(--accent)}
-.dot-label{width:100%;text-align:center;font-size:15px;color:var(--muted);font-weight:400;letter-spacing:1px;margin-top:4px}
-.num-word{font-size:18px;font-weight:300;color:var(--faint);letter-spacing:2px;min-height:24px}
+.dot-label{width:100%;text-align:center;font-size:15px;color:var(--muted);font-weight:500;letter-spacing:1px;margin-top:4px}
+.num-word{font-size:18px;font-weight:400;color:var(--faint);letter-spacing:2px;min-height:24px}
 
 /* Trace canvas */
 .trace-area{position:relative;width:260px;height:200px;border-radius:20px;background:var(--sunken);border:1px solid var(--line);overflow:hidden;touch-action:none;margin:0 auto}
 .trace-area canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;touch-action:none}
-.clear-btn{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 24px;color:var(--muted);font-size:14px;font-weight:300;letter-spacing:1px;cursor:pointer;transition:background 0.3s;font-family:inherit}
+.clear-btn{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 24px;color:var(--muted);font-size:14px;font-weight:400;letter-spacing:1px;cursor:pointer;transition:background 0.3s;font-family:inherit}
 .clear-btn:active{background:var(--surface-hi)}
-.toggle-btn{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 16px;color:var(--muted);font-size:13px;font-weight:300;cursor:pointer;transition:background 0.3s;font-family:inherit}
+.toggle-btn{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:8px 16px;color:var(--muted);font-size:13px;font-weight:400;cursor:pointer;transition:background 0.3s;font-family:inherit}
 .toggle-btn:active{background:var(--surface-hi)}
 .toggle-btn.on{background:var(--accent-soft);color:var(--accent)}
 
@@ -155,8 +184,8 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
 .opt.round{border-radius:50%;background:none}
 .opt.round:active{background:none;opacity:0.7}
 .opt.big{width:126px;height:126px}
-.opt.text{font-size:28px;font-weight:300;color:var(--ink);letter-spacing:1px}
-.plus{font-size:26px;font-weight:300;color:var(--faint)}
+.opt.text{font-family:var(--font-teach);font-size:28px;font-weight:400;color:var(--ink);letter-spacing:1px}
+.plus{font-family:var(--font-teach);font-size:26px;font-weight:400;color:var(--faint)}
 /* consigna dibuixada per a qui encara no llegeix */
 .cue{display:flex;align-items:center;justify-content:center;gap:20px}
 .cue .cluster{max-width:64px;gap:4px}
@@ -216,7 +245,7 @@ h1{font-size:26px;font-weight:300;letter-spacing:2px;color:var(--ink);margin-bot
   50%{transform:scale(1)}
   100%{transform:scale(0.42)}
 }
-.breath-word{position:absolute;font-size:16px;font-weight:300;letter-spacing:3px;color:var(--accent)}
+.breath-word{position:absolute;font-size:16px;font-weight:400;letter-spacing:3px;color:var(--accent)}
 #b-in{animation:bin 10s ease-in-out infinite}
 #b-out{animation:bout 10s ease-in-out infinite}
 @keyframes bin{0%{opacity:0}8%{opacity:1}38%{opacity:1}46%{opacity:0}100%{opacity:0}}
@@ -646,7 +675,7 @@ function drawGuideLetter(){
   traceCtx.clearRect(0,0,canvas.width,canvas.height)
   const txt=letters()[currentLet]
   const fs=Math.round(canvas.height*(txt.length>1?0.5:0.72))
-  traceCtx.font=fs+'px -apple-system,Helvetica Neue,Arial,sans-serif'
+  traceCtx.font=fs+"px Andika,system-ui,-apple-system,sans-serif"
   traceCtx.textAlign='center'
   traceCtx.textBaseline='middle'
   traceCtx.fillStyle=cssVar('--guide')
@@ -1130,6 +1159,12 @@ function initDraw(){
 
 /* ══ Arrencada ══ */
 document.querySelectorAll('[data-goto]').forEach(b=>b.addEventListener('click',()=>showScreen(b.dataset.goto)))
+
+/* Un <canvas> no es redibuixa quan acaba d'arribar una font: si la lletra
+   guia s'ha pintat abans que Andika hi fos, s'ha quedat amb la de recanvi. */
+if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{
+  if($('screen-letters').classList.contains('active'))drawGuideLetter()
+})
 document.querySelectorAll('[data-age]').forEach(b=>b.addEventListener('click',()=>setAge(parseInt(b.dataset.age))))
 $('num-prev').addEventListener('click',()=>navNum(-1))
 $('num-next').addEventListener('click',()=>navNum(1))

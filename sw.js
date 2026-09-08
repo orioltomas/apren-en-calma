@@ -4,14 +4,17 @@
      · documents  → xarxa primer, memòria cau com a xarxa de seguretat
      · icones i manifest → memòria cau primer (mai no canvien)
    Puja CACHE quan canviïn els fitxers estàtics. */
-const CACHE = 'aprenencalma-v2'
+const CACHE = 'aprenencalma-v3'
 const SHELL = [
   './',
   './index.html',
   './manifest.webmanifest',
   './icon-180.png',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './fonts/quicksand-variable-latin.woff2',
+  './fonts/andika-400-latin.woff2',
+  './fonts/andika-700-latin.woff2'
 ]
 
 /* skipWaiting aquí mateix: el worker nou agafa el relleu sense esperar que es
