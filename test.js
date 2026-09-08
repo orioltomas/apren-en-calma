@@ -184,9 +184,11 @@ T.setCase('maj')
 
 /* ── 6. Memòria ──────────────────────────────────────────────────────── */
 group('Memòria: parelles úniques')
+const EXPECTED_PAIRS = { 2: 2, 4: 4, 6: 6 }
 for (const age of [2, 4, 6]) {
   setAge(age)
   const cfg = T.memoryConfig()
+  check(`${age} anys: ${EXPECTED_PAIRS[age]} parelles`, cfg.pairs === EXPECTED_PAIRS[age], 'són ' + cfg.pairs)
   T.newMemory()
   const counts = {}
   T.cards().forEach(id => counts[id] = (counts[id] || 0) + 1)
