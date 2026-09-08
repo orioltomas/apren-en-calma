@@ -22,7 +22,7 @@ const markup = html.split('<script>')[0]
    arriben a l'objecte global, així que s'hi afegeix un epíleg que els exposa. */
 const src = script + `
 globalThis.__T = {
-  QUIZZES, AGE_ACTIVITIES, ACTS, SHAPES, COLORS, VOCAB, DIGITS, ACCENT, DIM,
+  QUIZZES, AGE_ACTIVITIES, ACTS, SHAPES, COLORS, VOCAB, VOCAB_MID, MID_DISTRACTORS, DIGITS, ACCENT, DIM,
   maxNumber, letters, renderNum, newMemory, memoryConfig,
   successMsg, doneMsg, reads, againLabel,
   setAge: a => { currentAge = a },
@@ -237,7 +237,7 @@ group('Restar: mai per sota d\'1, i els punts vius quadren')
 }
 
 /* ── 8. Primera lletra ───────────────────────────────────────────────── */
-group('Primera lletra: vocabulari i inicials')
+group('Primera lletra: vocabulari, inicials i lletra del mig')
 {
   /* El vocabulari, abans de mirar cap ronda. Ç i NY no hi són perquè cap
      paraula catalana comença així; K, W i Y perquè només les encapçalen
@@ -256,17 +256,42 @@ group('Primera lletra: vocabulari i inicials')
   check('cada entrada porta dibuix', senseDibuix.length === 0,
     senseDibuix.map(v => v.word).join(', '))
 
+  /* La Ç i la NY no encapçalen cap paraula catalana: es demanen al mig. */
+  const M = T.VOCAB_MID
+  const senseLletra = M.filter(v => !v.word.toUpperCase().includes(v.letter))
+  check('cada paraula del mig conté la seva lletra', senseLletra.length === 0,
+    senseLletra.map(v => v.letter + '/' + v.word).join(', '))
+  check('la Ç i la NY hi són totes dues',
+    ['Ç', 'NY'].every(l => M.some(v => v.letter === l)))
+
   /* La inicial no és sempre un sol caràcter: «lluna» es respon LL, no L. */
-  let bad = 0, digraf = 0
+  let bad = 0, digraf = 0, mig = 0, inicialProhibida = 0, distractorEstrany = 0
   for (let i = 0; i < 2000; i++) {
     const r = QZ.firstletter.build()
     const correcta = r.options.find(o => o.ok).html
-    if (!r.reveal.toUpperCase().startsWith(correcta)) bad++
-    if (r.reveal.toUpperCase().startsWith('LL') && correcta !== 'LL') digraf++
+    const esMig = r.prompt === 'quina lletra hi falta?'
+    if (esMig) {
+      mig++
+      const permesos = T.MID_DISTRACTORS[correcta].concat([correcta])
+      if (r.options.some(o => !permesos.includes(o.html))) distractorEstrany++
+      if (!r.reveal.toUpperCase().includes(correcta)) bad++
+    } else {
+      if (['Ç', 'NY'].includes(correcta)) inicialProhibida++
+      if (!r.reveal.toUpperCase().startsWith(correcta)) bad++
+      if (r.reveal.toUpperCase().startsWith('LL') && correcta !== 'LL') digraf++
+    }
   }
-  const a = check('la resposta encapçala la paraula', bad === 0, bad + ' errors')
+  const a = check('la resposta és a la paraula', bad === 0, bad + ' errors')
   const b = check('un dígraf es respon sencer', digraf === 0, digraf + ' cops respost a mitges')
-  if (a && b) ok('2000 rondes correctes sobre ' + V.length + ' paraules')
+  const c = check('la Ç i la NY mai com a inicial', inicialProhibida === 0,
+    inicialProhibida + ' cops')
+  const d = check('els distractors del mig són els confusibles', distractorEstrany === 0,
+    distractorEstrany + ' rondes')
+  const e = check('surten els dos tipus de ronda', mig > 200 && mig < 800,
+    mig + ' de 2000 al mig')
+  if (a && b && c && d && e)
+    ok('2000 rondes: ' + (2000 - mig) + ' inicials sobre ' + V.length +
+       ' paraules, ' + mig + ' del mig sobre ' + M.length)
 }
 
 /* ── 8b. Xifres ──────────────────────────────────────────────────────── */
